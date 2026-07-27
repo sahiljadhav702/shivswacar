@@ -1,0 +1,62 @@
+CREATE DATABASE IF NOT EXISTS car_service_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE car_service_db;
+
+CREATE TABLE IF NOT EXISTS customer (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  mobile VARCHAR(50) NOT NULL,
+  address TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_customer_mobile (mobile)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS vehicle (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customerId INT NOT NULL,
+  vehicleNumber VARCHAR(100) NOT NULL,
+  brand VARCHAR(100),
+  model VARCHAR(100),
+  year INT,
+  fuel_type VARCHAR(50),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_vehicle_number (vehicleNumber),
+  FOREIGN KEY (customerId) REFERENCES customer(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS jobcard (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  jobNumber VARCHAR(100) UNIQUE,
+  customerId INT,
+  vehicleId INT,
+  estimatedDelivery DATETIME,
+  status VARCHAR(50) DEFAULT 'Pending',
+  complaints TEXT,
+  totalAmount DECIMAL(12,2) DEFAULT 0.00,
+  bookingDate DATE,
+  bookingTime TIME,
+  mechanic_id INT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (customerId) REFERENCES customer(id) ON DELETE SET NULL,
+  FOREIGN KEY (vehicleId) REFERENCES vehicle(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS servicepackage (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  duration INT DEFAULT 0,
+  description TEXT,
+  parts TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  phone VARCHAR(50),
+  role VARCHAR(50) DEFAULT 'Customer',
+  password VARCHAR(255),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
