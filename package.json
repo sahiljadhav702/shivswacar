@@ -4,7 +4,7 @@
   "description": "Root package.json to deploy backend on Railway",
   "scripts": {
     "postinstall": "cd backend && npm install",
-    "start": "cd backend && npm start"
+    "start": "node backend/server.js"
   },
   "dependencies": {
     "express": "^5.2.1"
