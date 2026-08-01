@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import SplashScreen from './components/SplashScreen';
-import { Routes, Route, Link, Outlet, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, Link, Outlet, BrowserRouter, useLocation } from 'react-router-dom';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Customers from './pages/admin/Customers';
@@ -30,6 +30,7 @@ import { useState } from 'react';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const location = useLocation();
 
   return (
     <>
@@ -76,7 +77,7 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>
-                <Footer />
+                {!['/car-details', '/battery-service-selection'].includes(location.pathname) && <Footer />}
               </>
             } />
           </Routes>

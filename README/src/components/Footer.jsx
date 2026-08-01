@@ -46,24 +46,23 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="footer-premium-col">
-            <h4 className="col-title">Our Services</h4>
-            <ul className="footer-links-list">
-              <li><Link to="/car-services"><ChevronRight size={14} className="link-arrow"/> Scheduled Maintenance</Link></li>
-              <li><Link to="/battery-service"><ChevronRight size={14} className="link-arrow"/> Battery Replacement</Link></li>
-              <li><Link to="/ac-service"><ChevronRight size={14} className="link-arrow"/> AC Servicing</Link></li>
-              <li><Link to="/wheel-care"><ChevronRight size={14} className="link-arrow"/> Wheel & Tyre Care</Link></li>
-            </ul>
-          </div>
-
-          {/* Tools */}
-          <div className="footer-premium-col">
-            <h4 className="col-title">RTO & Tools</h4>
-            <ul className="footer-links-list">
-              <li><Link to="/parivahan"><ChevronRight size={14} className="link-arrow"/> Parivahan Services</Link></li>
-              <li><Link to="/rto-info"><ChevronRight size={14} className="link-arrow"/> E-Challan Status</Link></li>
-              <li><Link to="/owner-details"><ChevronRight size={14} className="link-arrow"/> Vehicle History</Link></li>
-              <li><Link to="/puc"><ChevronRight size={14} className="link-arrow"/> PUC Certificate</Link></li>
-            </ul>
+            <h4 className="col-title" style={{ textAlign: 'center' }}>Our Services</h4>
+            <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
+              <ul className="footer-links-list">
+                <li><Link to="/services/car-services"><ChevronRight size={14} className="link-arrow"/> Car Services</Link></li>
+                <li><Link to="/services/ac-repair"><ChevronRight size={14} className="link-arrow"/> AC Service & Repair</Link></li>
+                <li><Link to="/services/batteries"><ChevronRight size={14} className="link-arrow"/> Batteries</Link></li>
+                <li><Link to="/services/tyres-wheel-care"><ChevronRight size={14} className="link-arrow"/> Tyres & Wheel Care</Link></li>
+                <li><Link to="/services/denting-painting"><ChevronRight size={14} className="link-arrow"/> Denting & Painting</Link></li>
+              </ul>
+              <ul className="footer-links-list">
+                <li><Link to="/services/detailing"><ChevronRight size={14} className="link-arrow"/> Detailing Services</Link></li>
+                <li><Link to="/services/car-spa"><ChevronRight size={14} className="link-arrow"/> Car Spa & Cleaning</Link></li>
+                <li><Link to="/services/inspections"><ChevronRight size={14} className="link-arrow"/> Car Inspections</Link></li>
+                <li><Link to="/services/windshields-lights"><ChevronRight size={14} className="link-arrow"/> Windshields & Lights</Link></li>
+                <li><Link to="/services/suspension-fitments"><ChevronRight size={14} className="link-arrow"/> Suspension & Fitments</Link></li>
+              </ul>
+            </div>
           </div>
 
           {/* Contact */}

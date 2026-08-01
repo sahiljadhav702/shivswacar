@@ -17,7 +17,8 @@
   --button-text: #ffffff;
 
   min-height: 100vh;
-  padding-top: 80px; /* Prevent navbar overlap */
+  padding-top: 80px;
+  /* Prevent navbar overlap */
   background-color: var(--bg-main);
   background-image:
     radial-gradient(at 0% 0%, hsla(217, 100%, 92%, 1) 0, transparent 50%),
@@ -429,23 +430,38 @@
 @media (max-width: 900px) {
   .car-details-page-wrapper {
     padding-top: 60px;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .split-layout-container {
     flex-direction: column-reverse;
+    height: calc(100vh - 60px);
   }
 
   .left-marketing-pane {
     padding: 0;
     border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    min-height: 40vh;
+    border-bottom: none;
+    min-height: auto;
+    flex: 0.35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .left-marketing-pane img {
+    width: 100vw;
+    max-height: 120%;
+    object-fit: contain;
   }
 
   .right-selection-pane {
-    padding: 2rem 1rem;
+    padding: 0.5rem;
     border-left: none;
     align-items: center;
+    justify-content: center;
+    flex: 0.65;
   }
 
   .back-nav-arrow-btn {
@@ -456,8 +472,33 @@
   }
 
   .selection-card-container {
-    padding: 2.5rem 1.5rem;
-    margin-top: 2.5rem;
+    padding: 1.5rem 1rem;
+    margin-top: -3rem;
+    width: 95%;
+    position: relative;
+    z-index: 10;
+  }
+
+  .selection-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .selection-subtitle {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .car-selection-form {
+    gap: 0.8rem;
+  }
+
+  .selector-field-btn {
+    height: 50px;
+  }
+
+  .dropdown-field-wrapper {
+    margin-bottom: 0 !important;
   }
 
   .marketing-heading {

@@ -90,7 +90,7 @@ const CarDetails = () => {
     if (modelName.includes('tucson')) return tucson;
     if (modelName.includes('venue')) return redHyundai;
     if (modelName.includes('i20')) return greenHyundai;
-    
+
     // Default fallback image (generic Hyundai instead of Tesla)
     return blueHyundai;
   };
@@ -111,8 +111,7 @@ const CarDetails = () => {
         <div className="right-selection-pane">
 
           <div className="selection-card-container">
-            <h2 className="selection-title">Book your car service</h2>
-            <p className="selection-subtitle">Help us identify your car to get started</p>
+
 
             <form onSubmit={handleNext} className="car-selection-form">
               {/* Brand Field (Fixed) */}

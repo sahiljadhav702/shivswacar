@@ -1,7 +1,7 @@
 .footer-premium {
   background: #0b1120;
   color: #e2e8f0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
   margin-top: auto;
   position: relative;
   overflow: hidden;
@@ -95,7 +95,7 @@
 /* Grid Layout */
 .footer-premium-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  grid-template-columns: 2fr 2fr 1.5fr;
   gap: 60px;
   margin-bottom: 50px;
 }

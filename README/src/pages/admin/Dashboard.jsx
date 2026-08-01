@@ -4,7 +4,8 @@ import CategoryChart from '../../components/dashboard/CategoryChart';
 import Table from '../../components/ui/Table';
 import Modal from '../../components/ui/Modal';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import api from '../../api/axiosConfig';
 import { useNavigate } from "react-router-dom";
 import { Users, Car, CalendarCheck, Wrench, IndianRupee, TrendingUp } from "lucide-react";
 
@@ -43,8 +44,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/api/dashboard/stats").then(res => res.json()),
-      fetch("http://localhost:5000/api/dashboard/recent").then(res => res.json())
+      api.get("/dashboard/stats").then(res => res.data),
+      api.get("/dashboard/recent").then(res => res.data)
     ])
       .then(([statsRes, recentRes]) => {
         setStatsData(statsRes);
@@ -67,8 +68,8 @@ export default function Dashboard() {
     } else if (action === 'delete') {
       if (window.confirm("Are you sure you want to delete this booking?")) {
         try {
-          const res = await fetch(`http://localhost:5000/api/bookings/${row.id}`, { method: 'DELETE' });
-          if (res.ok) {
+          const res = await api.delete(`/bookings/${row.id}`);
+          if (res.status === 200 || res.status === 201 || res.data?.success) {
             setRecentBookings(recentBookings.filter(b => b.id !== row.id));
           }
         } catch (err) {
@@ -80,12 +81,8 @@ export default function Dashboard() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`http://localhost:5000/api/bookings/${editingId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: statusForm })
-      });
-      if (res.ok) {
+      const res = await api.put(`/bookings/${editingId}/status`, { status: statusForm });
+      if (res.status === 200 || res.status === 201 || res.data?.success) {
         setRecentBookings(recentBookings.map(b => b.id === editingId ? { ...b, status: statusForm } : b));
         setIsEditModalOpen(false);
       }

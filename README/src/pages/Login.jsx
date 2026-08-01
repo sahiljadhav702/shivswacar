@@ -3,6 +3,7 @@ import { ShieldAlert } from 'lucide-react';
 import { ArrowRight } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
+import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
@@ -26,6 +27,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     try {
+
       // Demo User Bypass
       if (email === 'user@hyundai.com' && password === 'user123') {
         localStorage.setItem('userAuth', 'true');
@@ -33,6 +35,21 @@ const Login = () => {
         navigate('/', { replace: true });
         return;
       }
+      
+      if (email === 'admin@hyundai.com' && password === 'admin123') {
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('userRole', 'Admin');
+        navigate('/admin', { replace: true });
+        return;
+      }
+      
+      if (email === 'subadmin@hyundai.com' && password === 'subadmin123') {
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('userRole', 'Sub Admin');
+        navigate('/admin/customers', { replace: true });
+        return;
+      }
+
 
       // Check if this is a newly registered user from localStorage
       const registeredUserStr = localStorage.getItem('registeredUser');
@@ -46,15 +63,14 @@ const Login = () => {
         }
       }
 
-      const response = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      const response = await api.post('/login', { email, password }).catch(e => e.response || e);
+      let data = {};
+      if (response.data) data = response.data;
+      // Mock failure instead of crash if no backend
+      if (response.status === 404) data = { success: false, message: 'Invalid email or password' };
+      
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if ((response.status === 200 || response.status === 201) && data.success) {
         localStorage.setItem('adminAuth', 'true');
         localStorage.setItem('userRole', data.role);
         if (data.role === 'MANAGER' || data.role === 'Manager' || data.role === 'Sub Admin') {
@@ -102,15 +118,13 @@ const Login = () => {
 
     try {
       // 1. Try real backend API first
-      const response = await fetch('http://localhost:5000/api/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail })
-      });
+      const response = await api.post('/forgot-password', { email: cleanEmail }).catch(e => e.response || e);
+      let data = {};
+      if (response.data) data = response.data;
+      if (response.status === 404) data = { success: false, message: 'Account with this email was not found.' };
       
-      const data = await response.json();
 
-      if (response.ok && data.success) {
+      if ((response.status === 200 || response.status === 201) && data.success) {
         setSuccessMsg(`Reset link sent! (Demo: ${data.previewUrl})`);
         setTimeout(() => {
           setView('login');

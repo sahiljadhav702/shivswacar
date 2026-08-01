@@ -7,6 +7,7 @@ import { Edit2 } from 'lucide-react';
 import { Star } from 'lucide-react';
 
 import { useState, useRef, useEffect } from 'react';
+import api from '../api/axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './DateTimeSelection.css';
 import garagePlaceholder from '../assets/car_background.png';
@@ -48,9 +49,9 @@ const DateTimeSelection = () => {
   const carouselRef = useRef(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/bookings/slots')
-      .then(res => res.json())
-      .then(data => {
+    api.get('/bookings/slots')
+      .then(res => res)
+      .then(res => { const data = res.data;
         if(data.success) setBookedSlots(data.data);
       })
       .catch(console.error);
@@ -131,72 +132,12 @@ const DateTimeSelection = () => {
     setIsSubmitting(true);
     setSubmitError('');
 
-    const dateStr = selectedDate.toISOString().split('T')[0];
     const dateFormatted = selectedDate.toLocaleDateString('en-GB');
-    // Extract just the start time (e.g. "10:00 AM")
-    const startTimeStr = selectedTime.split(' - ')[0]; 
     const regNo = vehicleState.regNumber || 'N/A';
     const ownerName = vehicleState.ownerName || 'Guest User';
     const mobileNumber = vehicleState.mobileNumber || '9999999999';
-    const nameParts = ownerName.trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || 'User';
 
     try {
-      // 1. Create Customer
-      const customerRes = await fetch("http://localhost:5000/api/customers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          email: `${mobileNumber}@dummy.com`,
-          phone_number: mobileNumber,
-          created_at: dateStr
-        })
-      });
-      const customerData = await customerRes.json();
-      if (!customerData.success) throw new Error("Failed to create customer");
-
-      // 2. Create Vehicle
-      const vehicleRes = await fetch("http://localhost:5000/api/vehicles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id: customerData.id,
-          registration_number: regNo,
-          brand: vehicleState.brand,
-          model: vehicleState.model,
-          year: 2023,
-          fuel_type: vehicleState.fuel || "Petrol"
-        })
-      });
-      const vehicleData = await vehicleRes.json();
-      if (!vehicleData.success) throw new Error("Failed to create vehicle");
-
-      // 3. Create Booking
-      const timeMapping = {
-        '09:00 AM': '09:00:00', '10:00 AM': '10:00:00', '11:00 AM': '11:00:00', '12:00 PM': '12:00:00',
-        '01:00 PM': '13:00:00', '02:00 PM': '14:00:00', '03:00 PM': '15:00:00', '04:00 PM': '16:00:00',
-        '05:00 PM': '17:00:00'
-      };
-
-      const bookingRes = await fetch("http://localhost:5000/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id: customerData.id,
-          vehicle_id: vehicleData.id,
-          booking_date: dateStr,
-          booking_time: timeMapping[startTimeStr] || '10:00:00',
-          service_type: pkgState.name,
-          total_amount: pkgState.price
-        })
-      });
-      const bookingData = await bookingRes.json();
-      if (!bookingData.success) throw new Error("Failed to create booking");
-
-      // Success
       const rawMessage = `Hello PB Wheels!\n\nI would like to confirm my booking:\n🚗 *Vehicle*: ${vehicleState.brand} ${vehicleState.model} (${regNo})\n👤 *Name*: ${ownerName}\n📞 *Phone*: ${mobileNumber}\n🛠️ *Service*: ${pkgState.name}\n🏢 *Garage*: ${garageState.name}\n📅 *Date & Time*: ${dateFormatted} at ${selectedTime}\n🚕 *Pickup/Drop*: ${pickupDrop ? 'Yes' : 'No'}\n💰 *Estimated Price*: ₹${pkgState.price.toLocaleString()}\n\nPlease confirm my appointment!`;
       
       window.open(`https://wa.me/919699938509?text=${encodeURIComponent(rawMessage)}`, '_blank');

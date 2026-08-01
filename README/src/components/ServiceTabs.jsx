@@ -2,6 +2,7 @@ import { Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone } from 'lucide-react';
 
+import api from '../api/axiosConfig';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ServiceTabs.css';
@@ -78,15 +79,10 @@ const ServiceTabs = ({ onRegNumberChange }) => {
     try {
       const cleanRegNumber = regNumber.replace(/-/g, "");
 
-      const response = await fetch(
-        `http://localhost:5000/api/vehicle/${cleanRegNumber}`
-      );
+      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
+      // Axios throws on !ok, handled in catch
 
       const vehicle = data.data.rc_details;
 
@@ -112,12 +108,10 @@ const ServiceTabs = ({ onRegNumberChange }) => {
     setIsLoading(true);
     try {
       const cleanRegNumber = car.reg.replace(/-/g, "");
-      const response = await fetch(`http://localhost:5000/api/vehicle/${cleanRegNumber}`);
-      const data = await response.json();
+      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
+      // Axios throws on !ok, handled in catch
 
       const vehicle = data.data.rc_details;
 

@@ -1,6 +1,7 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, AreaChart, CartesianGrid, XAxis, YAxis, Area } from 'recharts';
 
 import { useState, useEffect } from 'react';
+import api from '../../api/axiosConfig';
 
 const COLORS = ['#0F62FE', '#FF6B00', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#3B82F6', '#14B8A6'];
 
@@ -8,9 +9,7 @@ export default function CategoryChart() {
   const [data, setData] = useState([{ name: 'No Data', value: 1 }]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/dashboard/categories")
-      .then(res => res.json())
-      .then(json => {
+    api.get("/dashboard/categories").then(res => { const json = res.data;
         if (Array.isArray(json) && json.length > 0) {
           setData(json);
         }

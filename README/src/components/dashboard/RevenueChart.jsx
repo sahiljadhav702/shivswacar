@@ -1,14 +1,13 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, AreaChart, CartesianGrid, XAxis, YAxis, Area } from 'recharts';
 
 import { useState, useEffect } from 'react';
+import api from '../../api/axiosConfig';
 
 export default function RevenueChart() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/reports")
-      .then(res => res.json())
-      .then(json => {
+    api.get("/reports").then(res => { const json = res.data;
         if (json.monthlyRevenue) {
            const formatted = json.monthlyRevenue.map(item => ({
              name: item.month,

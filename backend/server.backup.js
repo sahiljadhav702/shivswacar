@@ -95,7 +95,7 @@ app.get("/api/dashboard/stats", async (req, res) => {
         const [[{ totalVehicles }]] = await db.query("SELECT COUNT(*) AS totalVehicles FROM Vehicles");
         const [[{ todayBookings }]] = await db.query("SELECT COUNT(*) AS todayBookings FROM Bookings WHERE DATE(booking_date) = CURDATE()");
         const [[{ pendingServices }]] = await db.query("SELECT COUNT(*) AS pendingServices FROM Bookings WHERE status = 'Pending'");
-        
+
         const [[{ monthlyRevenue }]] = await db.query("SELECT COALESCE(SUM(total_amount), 0) AS monthlyRevenue FROM Bookings WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE()) AND status = 'Completed'");
         const [[{ totalEarnings }]] = await db.query("SELECT COALESCE(SUM(total_amount), 0) AS totalEarnings FROM Bookings WHERE status = 'Completed'");
 
@@ -151,7 +151,7 @@ app.put("/api/bookings/:id", async (req, res) => {
     try {
         const { customer_id, vehicle_id, booking_date, booking_time } = req.body;
         await db.query(
-            "UPDATE Bookings SET customer_id = ?, vehicle_id = ?, booking_date = ?, booking_time = ? WHERE booking_id = ?", 
+            "UPDATE Bookings SET customer_id = ?, vehicle_id = ?, booking_date = ?, booking_time = ? WHERE booking_id = ?",
             [customer_id, vehicle_id, booking_date, booking_time, req.params.id]
         );
         res.json({ success: true, message: "Booking updated" });
@@ -324,7 +324,7 @@ app.post("/api/staff", async (req, res) => {
         const names = (name || "").trim().split(" ");
         const first_name = names[0] || "Unknown";
         const last_name = names.slice(1).join(" ") || " ";
-        
+
         await db.query(
             "INSERT INTO Users (first_name, last_name, email, phone_number, role, password_hash) VALUES (?, ?, ?, ?, ?, ?)",
             [first_name, last_name, email, phone_number, role, password]
@@ -356,7 +356,7 @@ app.get("/api/reports", async (req, res) => {
              ORDER BY YEAR(booking_date) ASC, MONTH(booking_date) ASC
              LIMIT 6`
         );
-        
+
         const [dailyRows] = await db.query(
             `SELECT DATE_FORMAT(booking_date, '%Y-%m-%d') AS date, 
                     COUNT(*) AS bookings
@@ -365,7 +365,7 @@ app.get("/api/reports", async (req, res) => {
              ORDER BY DATE(booking_date) DESC
              LIMIT 7`
         );
-        
+
         res.json({
             monthlyRevenue: monthlyRows.length > 0 ? monthlyRows : [{ month: 'No Data', revenue: 0 }],
             dailyBookings: dailyRows.length > 0 ? dailyRows.reverse() : [{ date: 'No Data', bookings: 0 }]
@@ -399,19 +399,19 @@ app.post("/api/login", async (req, res) => {
         if (email === 'admin@hyundai.com' && password === 'admin123') {
             return res.json({ success: true, role: 'Super Admin', token: 'demo-token' });
         }
-        
+
         const [users] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
         if (users.length === 0) {
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
-        
+
         const user = users[0];
         // Check password (in a real app, use bcrypt)
         // Here we just check if it matches password_hash, or allow 'password123' for existing users without passwords
         if (user.password_hash !== password && password !== 'password123') {
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
-        
+
         res.json({ success: true, role: user.role, id: user.user_id });
     } catch (err) {
         console.error("Login error:", err);
@@ -420,5 +420,5 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.listen(5000, () => {
-    console.log("Server running on http://localhost:5000");
+    console.log("Server running on https://shivswacar-production.up.railway.app");
 });

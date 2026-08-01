@@ -41,22 +41,26 @@ const Navbar = () => {
       {/* Main Navigation */}
       <nav className="floating-navbar">
         <div className="nav-content">
-          <span className="mobile-brand-text">HYUNDAI</span>
-          <Link 
-            to="/" 
-            className="brand"
-            onClick={(e) => {
-              if (window.innerWidth <= 900) {
-                e.preventDefault();
-                setIsMobileMenuOpen(!isMobileMenuOpen);
-              }
-            }}
-          >
+          <Link to="/" className="brand">
             <img src={hyundaiLogo} alt="Hyundai Logo" className="brand-icon" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </Link>
 
+          <span 
+            className="mobile-brand-text" 
+            style={{ fontStyle: 'italic', fontFamily: "'Playfair Display', 'Times New Roman', Georgia, serif", textAlign: 'center', flex: 1 }}
+          >
+            Mai Hyundai
+          </span>
+
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
           <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
               Home
             </Link>
             <div
@@ -64,23 +68,21 @@ const Navbar = () => {
               onMouseEnter={() => setDropdownOpen(true)}
               onMouseLeave={() => setDropdownOpen(false)}
             >
-
-
             </div>
             {isAuthenticated && (
-              <Link to="/my-garage" className={`nav-link ${location.pathname === '/my-garage' ? 'active' : ''}`}>
+              <Link to="/my-garage" className={`nav-link ${location.pathname === '/my-garage' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
                 My Garage
               </Link>
             )}
-            <Link to="/car-services" className={`nav-link ${location.pathname === '/car-services' ? 'active' : ''}`}>
+            <Link to="/car-services" className={`nav-link ${location.pathname === '/car-services' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
               Car Services
             </Link>
-            <Link to="/social-media" className={`nav-link ${location.pathname === '/social-media' ? 'active' : ''}`}>
+            <Link to="/social-media" className={`nav-link ${location.pathname === '/social-media' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
               Social Media
             </Link>
           
             <div className="nav-actions-mobile" style={{ display: window.innerWidth <= 900 ? 'flex' : 'none', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-              <a href="tel:9699938509" className="contact-chip-link" style={{ width: '100%' }}>
+              <a href="tel:9699938509" className="contact-chip-link" style={{ width: '100%' }} onClick={() => setIsMobileMenuOpen(false)}>
                 <div className="contact-chip" style={{ justifyContent: 'center' }}>
                   <Phone size={18} />
                   <span>9699938509</span>
@@ -94,6 +96,7 @@ const Navbar = () => {
                     localStorage.removeItem('userAuth');
                     localStorage.removeItem('userEmail');
                     window.location.href = '/';
+                    setIsMobileMenuOpen(false);
                   }}
                   className="login-btn"
                   style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', width: '100%', justifyContent: 'center' }}
@@ -101,7 +104,7 @@ const Navbar = () => {
                   Logout
                 </button>
               ) : (
-                <Link to="/login" className="login-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                <Link to="/login" className="login-btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsMobileMenuOpen(false)}>
                   <User size={18} />
                   <span>Login</span>
                 </Link>
@@ -138,8 +141,7 @@ const Navbar = () => {
                 <span>Login</span>
               </Link>
             )}
-                    </div>
-          
+          </div>
           
         </div>
       </nav>

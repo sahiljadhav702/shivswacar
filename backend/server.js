@@ -223,36 +223,6 @@ app.delete("/api/bookings/:id", async (req, res) => {
     }
 });
 
-// POST new customer
-app.post("/api/customers", async (req, res) => {
-    const { full_name, car_name, car_no, car_fuel, phone } = req.body;
-    try {
-        const names = (full_name || "").trim().split(" ");
-        const first_name = names[0] || "Unknown";
-        const last_name = names.slice(1).join(" ") || " ";
-        const email = `${phone || Date.now()}@customer.com`;
-
-        const [userResult] = await db.query(
-            "INSERT INTO Users (first_name, last_name, email, phone, role) VALUES (?, ?, ?, ?, 'Customer')",
-            [first_name, last_name, email, phone]
-        );
-        const customerId = userResult.insertId;
-
-        // If car info is provided, insert vehicle
-        if (car_name) {
-            const regNo = car_no || ("TBD-" + Math.floor(Math.random() * 10000));
-            await db.query(
-                "INSERT INTO Vehicles (customerId, registration_number, brand, model, year, fuel_type) VALUES (?, ?, 'Hyundai', ?, 2024, ?)",
-                [customerId, regNo, car_name, car_fuel || 'Petrol']
-            );
-        }
-
-        res.json({ success: true, id: customerId });
-    } catch (err) {
-        console.error("Error creating customer:", err);
-        res.status(500).json({ success: false, message: "Error creating customer" });
-    }
-});
 
 // POST new vehicle
 app.post("/api/vehicles", async (req, res) => {
@@ -621,10 +591,6 @@ app.post("/api/forgot-password", async (req, res) => {
 });
 
 
-app.listen(5000, () => {
-    console.log("Server running on http://localhost:5000");
-});// --- PHASE 6 NEW CRUD ROUTES ---
-
 // GET Bookings (jobcards)
 app.get('/api/bookings', async (req, res) => {
     try {
@@ -632,6 +598,7 @@ app.get('/api/bookings', async (req, res) => {
         res.json(rows);
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
 });
+
 // GET Bookings Slots Availability
 app.get('/api/bookings/slots', async (req, res) => {
     try {
@@ -639,7 +606,6 @@ app.get('/api/bookings/slots', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
 });
-
 
 app.put('/api/bookings/:id', async (req, res) => {
     try {
@@ -655,68 +621,66 @@ app.put('/api/bookings/:id', async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error', error: err.message });
     }
 });
-app.delete('/api/bookings/:id', async (req, res) => {
+
+// --- DASHBOARD APIS ---
+app.get('/api/dashboard/stats', async (req, res) => {
     try {
-        await db.query('DELETE FROM jobcard WHERE id=?', [req.params.id]);
-        res.json({ success: true, message: 'Booking deleted' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
+        const [customers] = await db.query('SELECT COUNT(*) as count FROM customer');
+        const [vehicles] = await db.query('SELECT COUNT(*) as count FROM vehicle');
+        const [todayBookings] = await db.query('SELECT COUNT(*) as count FROM jobcard WHERE DATE(createdAt) = CURDATE()');
+        const [pending] = await db.query('SELECT COUNT(*) as count FROM jobcard WHERE status = "Pending"');
+        
+        res.json({
+            totalCustomers: customers[0].count,
+            totalVehicles: vehicles[0].count,
+            todayBookings: todayBookings[0].count,
+            pendingServices: pending[0].count,
+            monthlyRevenue: "₹0",
+            totalEarnings: "₹0"
+        });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
-// GET Services (servicepackages)
-app.get('/api/services', async (req, res) => {
+app.get('/api/dashboard/recent', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM servicepackage ORDER BY createdAt DESC');
+        const [rows] = await db.query(`
+            SELECT j.id, u.name as customer, v.vehicleNumber as vehicle, 'General Service' as type, DATE_FORMAT(j.createdAt, '%Y-%m-%d') as date, j.status
+            FROM jobcard j 
+            LEFT JOIN user u ON j.customerId = u.id 
+            LEFT JOIN vehicle v ON j.vehicleId = v.id 
+            ORDER BY j.createdAt DESC LIMIT 5
+        `);
         res.json(rows);
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.post('/api/services', async (req, res) => {
-    try {
-        const { name, price, duration, description, parts } = req.body;
-        await db.query('INSERT INTO servicepackage (name, price, duration, description, parts) VALUES (?, ?, ?, ?, ?)', [name, price, duration, description, parts ? JSON.stringify(parts) : null]);
-        res.json({ success: true, message: 'Service created' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.put('/api/services/:id', async (req, res) => {
-    try {
-        const { name, price, duration, description, parts } = req.body;
-        await db.query('UPDATE servicepackage SET name=?, price=?, duration=?, description=?, parts=? WHERE id=?', [name, price, duration, description, parts ? JSON.stringify(parts) : null, req.params.id]);
-        res.json({ success: true, message: 'Service updated' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.delete('/api/services/:id', async (req, res) => {
-    try {
-        await db.query('DELETE FROM servicepackage WHERE id=?', [req.params.id]);
-        res.json({ success: true, message: 'Service deleted' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
+    } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
-// GET Staff
-app.get('/api/staff', async (req, res) => {
+app.get('/api/dashboard/categories', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM user WHERE role IN ("Mechanic", "Admin") ORDER BY createdAt DESC');
-        res.json(rows);
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.post('/api/staff', async (req, res) => {
-    try {
-        const { name, email, phone, role } = req.body;
-        await db.query('INSERT INTO user (name, email, phone, role, password) VALUES (?, ?, ?, ?, "password123")', [name, email, phone, role || 'Mechanic']);
-        res.json({ success: true, message: 'Staff created' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.put('/api/staff/:id', async (req, res) => {
-    try {
-        const { name, email, phone, role } = req.body;
-        await db.query('UPDATE user SET name=?, email=?, phone=?, role=? WHERE id=?', [name, email, phone, role, req.params.id]);
-        res.json({ success: true, message: 'Staff updated' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
-});
-app.delete('/api/staff/:id', async (req, res) => {
-    try {
-        await db.query('DELETE FROM user WHERE id=?', [req.params.id]);
-        res.json({ success: true, message: 'Staff deleted' });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
+        res.json([
+            { name: 'General Service', value: 45 },
+            { name: 'Repair', value: 25 },
+            { name: 'Wash', value: 20 },
+            { name: 'Inspection', value: 10 }
+        ]);
+    } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
+app.get('/api/reports', async (req, res) => {
+    try {
+        res.json({
+            monthlyRevenue: [
+                { month: 'Jan', revenue: 12000 },
+                { month: 'Feb', revenue: 19000 },
+                { month: 'Mar', revenue: 15000 },
+                { month: 'Apr', revenue: 22000 },
+                { month: 'May', revenue: 28000 },
+                { month: 'Jun', revenue: 35000 }
+            ]
+        });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
+});
 
-;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} (https://shivswacar-production.up.railway.app)`);
+});

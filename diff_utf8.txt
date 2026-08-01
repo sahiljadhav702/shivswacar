@@ -1,0 +1,3241 @@
+﻿diff --git a/README/src/App.jsx b/ui change/src/App.jsx
+index 8267da4..694ab72 100644
+--- a/README/src/App.jsx
++++ b/ui change/src/App.jsx	
+@@ -1,6 +1,6 @@
+ import { motion, AnimatePresence } from 'framer-motion';
+ import SplashScreen from './components/SplashScreen';
+-import { Routes, Route, Link, Outlet, BrowserRouter } from 'react-router-dom';
++import { Routes, Route, Link, Outlet, BrowserRouter, useLocation } from 'react-router-dom';
+ import AdminLayout from './components/layout/AdminLayout';
+ import Dashboard from './pages/admin/Dashboard';
+ import Customers from './pages/admin/Customers';
+@@ -30,6 +30,7 @@ import { useState } from 'react';
+ 
+ function App() {
+   const [showSplash, setShowSplash] = useState(true);
++  const location = useLocation();
+ 
+   return (
+     <>
+@@ -76,7 +77,7 @@ function App() {
+                     <Route path="*" element={<NotFound />} />
+                   </Routes>
+                 </div>
+-                <Footer />
++                {!['/car-details', '/battery-service-selection'].includes(location.pathname) && <Footer />}
+               </>
+             } />
+           </Routes>
+diff --git a/README/src/api/axiosConfig.js b/ui change/src/api/axiosConfig.js
+index 019671e..49b8f39 100644
+--- a/README/src/api/axiosConfig.js
++++ b/ui change/src/api/axiosConfig.js	
+@@ -1,8 +1,9 @@
+ import axios from 'axios';
+ 
+ const api = axios.create({
+-  // Use environment variable if available, otherwise default to local backend
+-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
++  // Note: .railway.internal is for server-to-server communication on Railway.
++  // If this frontend runs in a user's browser, you will need a PUBLIC Railway URL (e.g., your-app.up.railway.app).
++  baseURL: 'https://shivswacar-production.up.railway.app/api',
+   headers: {
+     'Content-Type': 'application/json',
+   },
+@@ -29,11 +30,10 @@ api.interceptors.response.use(
+   },
+   (error) => {
+     if (error.response && error.response.status === 401) {
+-      if (window.location.pathname !== '/login') {
+-        localStorage.removeItem('token');
+-        localStorage.removeItem('userRole');
+-        window.location.href = '/login';
+-      }
++      // Handle unauthorized access (e.g., redirect to login)
++      localStorage.removeItem('token');
++      localStorage.removeItem('userRole');
++      window.location.href = '/login';
+     }
+     return Promise.reject(error);
+   }
+diff --git a/README/src/components/Footer.css b/ui change/src/components/Footer.css
+index e4e76f8..bc2bdf4 100644
+--- a/README/src/components/Footer.css
++++ b/ui change/src/components/Footer.css	
+@@ -1,7 +1,7 @@
+ .footer-premium {
+   background: #0b1120;
+   color: #e2e8f0;
+-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
++  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+   margin-top: auto;
+   position: relative;
+   overflow: hidden;
+@@ -95,7 +95,7 @@
+ /* Grid Layout */
+ .footer-premium-grid {
+   display: grid;
+-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
++  grid-template-columns: 2fr 2fr 1.5fr;
+   gap: 60px;
+   margin-bottom: 50px;
+ }
+diff --git a/README/src/components/Footer.jsx b/ui change/src/components/Footer.jsx
+index 838e6f2..2e2dc58 100644
+--- a/README/src/components/Footer.jsx
++++ b/ui change/src/components/Footer.jsx	
+@@ -46,24 +46,23 @@ const Footer = () => {
+ 
+           {/* Quick Links */}
+           <div className="footer-premium-col">
+-            <h4 className="col-title">Our Services</h4>
+-            <ul className="footer-links-list">
+-              <li><Link to="/car-services"><ChevronRight size={14} className="link-arrow"/> Scheduled Maintenance</Link></li>
+-              <li><Link to="/battery-service"><ChevronRight size={14} className="link-arrow"/> Battery Replacement</Link></li>
+-              <li><Link to="/ac-service"><ChevronRight size={14} className="link-arrow"/> AC Servicing</Link></li>
+-              <li><Link to="/wheel-care"><ChevronRight size={14} className="link-arrow"/> Wheel & Tyre Care</Link></li>
+-            </ul>
+-          </div>
+-
+-          {/* Tools */}
+-          <div className="footer-premium-col">
+-            <h4 className="col-title">RTO & Tools</h4>
+-            <ul className="footer-links-list">
+-              <li><Link to="/parivahan"><ChevronRight size={14} className="link-arrow"/> Parivahan Services</Link></li>
+-              <li><Link to="/rto-info"><ChevronRight size={14} className="link-arrow"/> E-Challan Status</Link></li>
+-              <li><Link to="/owner-details"><ChevronRight size={14} className="link-arrow"/> Vehicle History</Link></li>
+-              <li><Link to="/puc"><ChevronRight size={14} className="link-arrow"/> PUC Certificate</Link></li>
+-            </ul>
++            <h4 className="col-title" style={{ textAlign: 'center' }}>Our Services</h4>
++            <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
++              <ul className="footer-links-list">
++                <li><Link to="/services/car-services"><ChevronRight size={14} className="link-arrow"/> Car Services</Link></li>
++                <li><Link to="/services/ac-repair"><ChevronRight size={14} className="link-arrow"/> AC Service & Repair</Link></li>
++                <li><Link to="/services/batteries"><ChevronRight size={14} className="link-arrow"/> Batteries</Link></li>
++                <li><Link to="/services/tyres-wheel-care"><ChevronRight size={14} className="link-arrow"/> Tyres & Wheel Care</Link></li>
++                <li><Link to="/services/denting-painting"><ChevronRight size={14} className="link-arrow"/> Denting & Painting</Link></li>
++              </ul>
++              <ul className="footer-links-list">
++                <li><Link to="/services/detailing"><ChevronRight size={14} className="link-arrow"/> Detailing Services</Link></li>
++                <li><Link to="/services/car-spa"><ChevronRight size={14} className="link-arrow"/> Car Spa & Cleaning</Link></li>
++                <li><Link to="/services/inspections"><ChevronRight size={14} className="link-arrow"/> Car Inspections</Link></li>
++                <li><Link to="/services/windshields-lights"><ChevronRight size={14} className="link-arrow"/> Windshields & Lights</Link></li>
++                <li><Link to="/services/suspension-fitments"><ChevronRight size={14} className="link-arrow"/> Suspension & Fitments</Link></li>
++              </ul>
++            </div>
+           </div>
+ 
+           {/* Contact */}
+diff --git a/README/src/components/Navbar.css b/ui change/src/components/Navbar.css
+index 1dc6e07..b66cc4e 100644
+--- a/README/src/components/Navbar.css
++++ b/ui change/src/components/Navbar.css	
+@@ -12,7 +12,7 @@
+   z-index: 1001;
+   display: flex;
+   align-items: center;
+-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
++  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+ }
+@@ -64,7 +64,7 @@
+   left: 0;
+   width: 100%;
+   z-index: 1000;
+-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
++  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+ 
+   /* Match footer background */
+   background: rgba(255, 255, 255, 0.85);
+diff --git a/README/src/components/Navbar.jsx b/ui change/src/components/Navbar.jsx
+index 9a82c9e..65f5a63 100644
+--- a/README/src/components/Navbar.jsx
++++ b/ui change/src/components/Navbar.jsx	
+@@ -41,22 +41,26 @@ const Navbar = () => {
+       {/* Main Navigation */}
+       <nav className="floating-navbar">
+         <div className="nav-content">
+-          <span className="mobile-brand-text">HYUNDAI</span>
+-          <Link 
+-            to="/" 
+-            className="brand"
+-            onClick={(e) => {
+-              if (window.innerWidth <= 900) {
+-                e.preventDefault();
+-                setIsMobileMenuOpen(!isMobileMenuOpen);
+-              }
+-            }}
+-          >
++          <Link to="/" className="brand">
+             <img src={hyundaiLogo} alt="Hyundai Logo" className="brand-icon" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+           </Link>
+ 
++          <span 
++            className="mobile-brand-text" 
++            style={{ fontStyle: 'italic', fontFamily: "'Playfair Display', 'Times New Roman', Georgia, serif", textAlign: 'center', flex: 1 }}
++          >
++            Mai Hyundai
++          </span>
++
++          <button 
++            className="mobile-menu-btn" 
++            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
++          >
++            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
++          </button>
++
+           <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+-            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
++            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+               Home
+             </Link>
+             <div
+@@ -64,23 +68,21 @@ const Navbar = () => {
+               onMouseEnter={() => setDropdownOpen(true)}
+               onMouseLeave={() => setDropdownOpen(false)}
+             >
+-
+-
+             </div>
+             {isAuthenticated && (
+-              <Link to="/my-garage" className={`nav-link ${location.pathname === '/my-garage' ? 'active' : ''}`}>
++              <Link to="/my-garage" className={`nav-link ${location.pathname === '/my-garage' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                 My Garage
+               </Link>
+             )}
+-            <Link to="/car-services" className={`nav-link ${location.pathname === '/car-services' ? 'active' : ''}`}>
++            <Link to="/car-services" className={`nav-link ${location.pathname === '/car-services' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+               Car Services
+             </Link>
+-            <Link to="/social-media" className={`nav-link ${location.pathname === '/social-media' ? 'active' : ''}`}>
++            <Link to="/social-media" className={`nav-link ${location.pathname === '/social-media' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+               Social Media
+             </Link>
+           
+             <div className="nav-actions-mobile" style={{ display: window.innerWidth <= 900 ? 'flex' : 'none', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+-              <a href="tel:9699938509" className="contact-chip-link" style={{ width: '100%' }}>
++              <a href="tel:9699938509" className="contact-chip-link" style={{ width: '100%' }} onClick={() => setIsMobileMenuOpen(false)}>
+                 <div className="contact-chip" style={{ justifyContent: 'center' }}>
+                   <Phone size={18} />
+                   <span>9699938509</span>
+@@ -94,6 +96,7 @@ const Navbar = () => {
+                     localStorage.removeItem('userAuth');
+                     localStorage.removeItem('userEmail');
+                     window.location.href = '/';
++                    setIsMobileMenuOpen(false);
+                   }}
+                   className="login-btn"
+                   style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', width: '100%', justifyContent: 'center' }}
+@@ -101,7 +104,7 @@ const Navbar = () => {
+                   Logout
+                 </button>
+               ) : (
+-                <Link to="/login" className="login-btn" style={{ width: '100%', justifyContent: 'center' }}>
++                <Link to="/login" className="login-btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsMobileMenuOpen(false)}>
+                   <User size={18} />
+                   <span>Login</span>
+                 </Link>
+@@ -138,8 +141,7 @@ const Navbar = () => {
+                 <span>Login</span>
+               </Link>
+             )}
+-                    </div>
+-          
++          </div>
+           
+         </div>
+       </nav>
+diff --git a/README/src/components/ServiceTabs.css b/ui change/src/components/ServiceTabs.css
+index 8e8d8c4..242da4f 100644
+--- a/README/src/components/ServiceTabs.css
++++ b/ui change/src/components/ServiceTabs.css	
+@@ -403,7 +403,6 @@
+ @media (max-width: 900px) {
+   .creative-inputs-row {
+     flex-direction: column;
+-    gap: 1rem;
+   }
+ 
+   .creative-input-group,
+@@ -412,41 +411,6 @@
+   }
+ 
+   .creative-tabs-pill-container {
+-    justify-content: center;
+-    width: fit-content;
+-    max-width: 100%;
+-  }
+-
+-  .creative-content-container {
+-    padding: 1.25rem; /* Reduce padding significantly to save space */
+-    border-radius: 20px;
+-  }
+-
+-  .creative-input-group {
+-    padding: 0.5rem 1rem;
+-    height: 70px; /* Reduce height */
+-  }
+-
+-  .creative-action-btn {
+-    height: 60px; /* Reduce button height */
+-    font-size: 1rem;
+-  }
+-
+-  .creative-input-block input {
+-    font-size: 1.15rem; /* Slightly smaller text for mobile */
+-  }
+-
+-  .creative-input-divider {
+-    margin: 0 0.75rem; /* Save space around the divider */
+-  }
+-
+-  .creative-ind-plate {
+-    width: 32px;
+-    height: 40px;
+-  }
+-
+-  .creative-phone-icon {
+-    width: 40px;
+-    height: 40px;
++    justify-content: flex-start;
+   }
+ }
+diff --git a/README/src/components/ServiceTabs.jsx b/ui change/src/components/ServiceTabs.jsx
+index 1fed611..45eaadf 100644
+--- a/README/src/components/ServiceTabs.jsx
++++ b/ui change/src/components/ServiceTabs.jsx	
+@@ -4,7 +4,6 @@ import { Phone } from 'lucide-react';
+ 
+ import { useState, useEffect } from 'react';
+ import { useNavigate } from 'react-router-dom';
+-import api from '../api/axiosConfig';
+ import './ServiceTabs.css';
+ 
+ const ServiceTabs = ({ onRegNumberChange }) => {
+@@ -79,8 +78,15 @@ const ServiceTabs = ({ onRegNumberChange }) => {
+     try {
+       const cleanRegNumber = regNumber.replace(/-/g, "");
+ 
+-      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+-      const data = response.data;
++      const response = await fetch(
++        `http://localhost:5000/api/vehicle/${cleanRegNumber}`
++      );
++
++      const data = await response.json();
++
++      if (!response.ok) {
++        throw new Error(data.message);
++      }
+ 
+       const vehicle = data.data.rc_details;
+ 
+@@ -106,8 +112,12 @@ const ServiceTabs = ({ onRegNumberChange }) => {
+     setIsLoading(true);
+     try {
+       const cleanRegNumber = car.reg.replace(/-/g, "");
+-      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+-      const data = response.data;
++      const response = await fetch(`http://localhost:5000/api/vehicle/${cleanRegNumber}`);
++      const data = await response.json();
++
++      if (!response.ok) {
++        throw new Error(data.message);
++      }
+ 
+       const vehicle = data.data.rc_details;
+ 
+diff --git a/README/src/components/dashboard/CategoryChart.jsx b/ui change/src/components/dashboard/CategoryChart.jsx
+index d687501..c65d484 100644
+--- a/README/src/components/dashboard/CategoryChart.jsx
++++ b/ui change/src/components/dashboard/CategoryChart.jsx	
+@@ -1,7 +1,6 @@
+ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, AreaChart, CartesianGrid, XAxis, YAxis, Area } from 'recharts';
+ 
+ import { useState, useEffect } from 'react';
+-import api from '../../api/axiosConfig';
+ 
+ const COLORS = ['#0F62FE', '#FF6B00', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#3B82F6', '#14B8A6'];
+ 
+@@ -9,8 +8,8 @@ export default function CategoryChart() {
+   const [data, setData] = useState([{ name: 'No Data', value: 1 }]);
+ 
+   useEffect(() => {
+-    api.get("/dashboard/categories")
+-      .then(res => res.data)
++    fetch("http://localhost:5000/api/dashboard/categories")
++      .then(res => res.json())
+       .then(json => {
+         if (Array.isArray(json) && json.length > 0) {
+           setData(json);
+@@ -39,7 +38,7 @@ export default function CategoryChart() {
+                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+               ))}
+             </Pie>
+-            <Tooltip
++            <Tooltip 
+               contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+             />
+             <Legend verticalAlign="bottom" height={36} iconType="circle" />
+diff --git a/README/src/components/dashboard/RevenueChart.jsx b/ui change/src/components/dashboard/RevenueChart.jsx
+index bfe96c9..b5ceb53 100644
+--- a/README/src/components/dashboard/RevenueChart.jsx
++++ b/ui change/src/components/dashboard/RevenueChart.jsx	
+@@ -1,21 +1,20 @@
+ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, AreaChart, CartesianGrid, XAxis, YAxis, Area } from 'recharts';
+ 
+ import { useState, useEffect } from 'react';
+-import api from '../../api/axiosConfig';
+ 
+ export default function RevenueChart() {
+   const [data, setData] = useState([]);
+ 
+   useEffect(() => {
+-    api.get("/reports")
+-      .then(res => res.data)
++    fetch("http://localhost:5000/api/reports")
++      .then(res => res.json())
+       .then(json => {
+         if (json.monthlyRevenue) {
+-          const formatted = json.monthlyRevenue.map(item => ({
+-            name: item.month,
+-            revenue: Number(item.revenue) || 0
+-          }));
+-          setData(formatted);
++           const formatted = json.monthlyRevenue.map(item => ({
++             name: item.month,
++             revenue: Number(item.revenue) || 0
++           }));
++           setData(formatted);
+         }
+       })
+       .catch(err => console.error("Error fetching revenue chart data:", err));
+@@ -29,14 +28,14 @@ export default function RevenueChart() {
+           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+             <defs>
+               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+-                <stop offset="5%" stopColor="#0F62FE" stopOpacity={0.3} />
+-                <stop offset="95%" stopColor="#0F62FE" stopOpacity={0} />
++                <stop offset="5%" stopColor="#0F62FE" stopOpacity={0.3}/>
++                <stop offset="95%" stopColor="#0F62FE" stopOpacity={0}/>
+               </linearGradient>
+             </defs>
+             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+-            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `Γé╣${val / 1000}k`} dx={-10} />
+-            <Tooltip
++            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `Γé╣${val/1000}k`} dx={-10} />
++            <Tooltip 
+               contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+               itemStyle={{ color: '#0F62FE' }}
+               formatter={(value) => [`Γé╣${value}`, 'Revenue']}
+diff --git a/README/src/pages/BatteryServiceSelection.jsx b/ui change/src/pages/BatteryServiceSelection.jsx
+index 40a249e..a4a9010 100644
+--- a/README/src/pages/BatteryServiceSelection.jsx
++++ b/ui change/src/pages/BatteryServiceSelection.jsx	
+@@ -1,274 +1,9 @@
+-import { Battery } from 'lucide-react';
+-import { Shield } from 'lucide-react';
+-import { Award } from 'lucide-react';
+-import { ShieldCheck } from 'lucide-react';
+-import { Wrench } from 'lucide-react';
+-import { TrendingUp } from 'lucide-react';
+-import { Clock } from 'lucide-react';
+-import { Star } from 'lucide-react';
+-import { Check } from 'lucide-react';
+-import { Zap } from 'lucide-react';
+-import { Settings } from 'lucide-react';
+-import { Truck } from 'lucide-react';
+-import { ArrowLeft } from 'lucide-react';
+-import { motion, AnimatePresence } from 'framer-motion';
+-import { Calendar } from 'lucide-react';
+-import { CircleCheck } from 'lucide-react';
+-import { Plus } from 'lucide-react';
+-import { ChevronRight } from 'lucide-react';
+-
+-//   // Extract data from location.state if it exists
+-//     regNumber: 'MH-12-AB-1234',
+-//     mobileNumber: '',
+-//     brand: 'HONDA',
+-//     model: 'CITY',
+-//     fuel: 'Petrol'
+-//     '2 Months / 1500 Km',
+-//     '1 Year / 10000 Km',
+-//     '2 Year / 20000 Km',
+-//     '3 Year / 30000 Km',
+-//     '4 Year / 40000 Km',
+-//     '5 Year / 50000 Km',
+-//     '6 Year / 60000 Km',
+-//     '7 Year / 70000 Km',
+-//     '8 Year / 80000 Km',
+-//     '9 Year / 90000 Km',
+-//     '10 Year / 100000 Kms'
+-//   ];
+-
+-//   useEffect(() => {
+-//       try {
+-//         // Map backend data to frontend package format
+-//           id: pkg.id.toString(),
+-//           title: pkg.name,
+-//           desc: pkg.description || 'Comprehensive battery care with performance optimization.',
+-//           price: pkg.price,
+-//           oldPrice: pkg.price + Math.floor(pkg.price * 0.3), // Fake old price for UI
+-//           badge: 'Special Offer',
+-//           popular: index === 1, // Make second package popular
+-//           includes: pkg.description ? pkg.description.split(',').map(s => s.trim()) : ['Standard Inspection', 'Voltage Test', 'Cleaning']
+-//         setPackages(mappedPackages);
+-//         if (mappedPackages.length > 0) {
+-//           setSelectedPackage(mappedPackages[0].id);
+-//         console.error("Failed to fetch packages:", err);
+-//         setIsLoading(false);
+-//     fetchPackages();
+-//     {
+-//       id: 'Basic',
+-//       title: 'Basic Battery Care',
+-//       desc: 'Essential battery inspection and maintenance for everyday reliability.',
+-//       price: 499,
+-//       oldPrice: 799,
+-//       badge: '20% OFF',
+-//       includes: ['Battery Health Check', 'Terminal Cleaning', 'Voltage Test', 'Charging System Inspection', 'Water Level Check (if applicable)']
+-//     {
+-//       id: 'Standard',
+-//       title: 'Standard Battery Service',
+-//       desc: 'Complete battery maintenance with performance optimization.',
+-//       price: 999,
+-//       oldPrice: 1499,
+-//       badge: '35% OFF',
+-//       popular: true,
+-//       includes: ['Everything in Basic', 'Battery Charging', 'Load Test', 'Alternator Test', 'Electrical Connection Inspection']
+-//     {
+-//       id: 'Premium',
+-//       title: 'Premium Battery Protection',
+-//       desc: 'Comprehensive battery care with doorstep replacement support.',
+-//       price: 1499,
+-//       oldPrice: 2299,
+-//       badge: '40% OFF',
+-//       includes: ['Everything in Standard', 'Doorstep Installation', 'Jump Start Assistance', 'Battery Replacement Support', 'Warranty Assistance', 'Priority Service']
+-//   ];
+-
+-//   // Use dynamic packages if available, otherwise fallback to default
+-//       { name: 'Air Filter', price: 0 },
+-//       { name: 'Engine Oil', price: 0 },
+-//       { name: 'Engine Oil Filter', price: 0 },
+-//       { name: 'AC Filter', price: 0 },
+-//       { name: 'Fuel Filter', price: 0 },
+-//       { name: 'Coolant', price: 0 },
+-//       { name: 'Spark Plugs', price: 0 },
+-//       { name: 'Brake Fluid', price: 0 },
+-//       { name: 'Manual Transmission', price: 0 }
+-//     ];
+-
+-//     if (!interval || interval.includes('1500 Km')) {
+-//     // Standard for 10000km and above
+-//     parts[1].price = 1672; // Engine Oil
+-//     parts[2].price = 107;  // Engine Oil Filter
+-
+-//     if (interval.includes('20000') || interval.includes('40000') || interval.includes('60000') || interval.includes('80000') || interval.includes('100000')) {
+-//       parts[0].price = 350; // Air Filter
+-//       parts[3].price = 350; // AC Filter
+-//     if (interval.includes('30000') || interval.includes('60000') || interval.includes('90000')) {
+-//       parts[5].price = 800; // Coolant
+-//     if (interval.includes('40000') || interval.includes('80000')) {
+-//       parts[4].price = 450; // Fuel Filter
+-//       parts[6].price = 600; // Spark Plugs
+-//       parts[7].price = 300; // Brake Fluid
+-//       parts[8].price = 1200; // Manual Transmission
+-//     'Genuine Parts', 'Certified Technicians', 'Transparent Pricing',
+-//     'Fast Service', 'Official Warranty', 'Expert Mechanics', 'Trusted by Thousands'
+-//   ];
+-
+-//     { id: 's1', title: 'Battery Replacement', price: 299, icon: <Battery size={24} /> },
+-//     { id: 's2', title: 'Battery Health Check', price: 199, icon: <Shield size={24} /> },
+-//     { id: 's3', title: 'Jump Start Service', price: 399, icon: <Zap size={24} /> },
+-//     { id: 's4', title: 'Battery Charging', price: 249, icon: <Zap size={24} /> },
+-//     { id: 's5', title: 'Terminal Cleaning', price: 149, icon: <Wrench size={24} /> },
+-//     { id: 's6', title: 'Alternator Testing', price: 299, icon: <Settings size={24} /> },
+-//     { id: 's7', title: 'Warranty Assistance', price: 0, icon: <ShieldCheck size={24} />, freeText: 'Free' },
+-//     { id: 's8', title: 'Doorstep Installation', price: 0, icon: <Truck size={24} />, freeText: 'Free with Battery Purchase' },
+-//   ];
+-
+-//     if (selectedAddons.find(a => a.id === service.id)) {
+-//       setSelectedAddons(selectedAddons.filter(a => a.id !== service.id));
+-//       setSelectedAddons([...selectedAddons, service]);
+-//     hidden: { opacity: 0, y: 30 },
+-//     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+-//         {/* Left Side */}
+-//             Select Service Interval
+-//           {/* Service Interval Premium Slider */}
+-//                 {selectedInterval || 'Slide to select interval'}
+-//               {selectedInterval && (
+-//                   {serviceIntervals.indexOf(selectedInterval) + 1} of {serviceIntervals.length}
+-//               )}
+-//               type="range" 
+-//               min="0" 
+-//               max={serviceIntervals.length - 1} 
+-//               step="1"
+-//               value={selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0}
+-//               onChange={(e) => setSelectedInterval(serviceIntervals[parseInt(e.target.value)])}
+-//               className="premium-brightness-slider"
+-//               style={{
+-//                 width: '100%',
+-//                 appearance: 'none',
+-//                 height: '8px',
+-//                 borderRadius: '8px',
+-//                 outline: 'none',
+-//                 cursor: 'pointer',
+-//                 background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0) / (serviceIntervals.length - 1) * 100}%, #e5e7eb ${(selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0) / (serviceIntervals.length - 1) * 100}%, #e5e7eb 100%)`
+-//             />
+-
+-//             .premium-brightness-slider::-webkit-slider-thumb {
+-//               -webkit-appearance: none;
+-//               appearance: none;
+-//               width: 16px;
+-//               height: 16px;
+-//               border-radius: 50%;
+-//               background: #fff;
+-//               cursor: pointer;
+-//               box-shadow: 0 0 8px rgba(0, 0, 0, 0.1), 0 0 0 4.5px #3b82f6;
+-//               transition: transform 0.1s ease;
+-//             .premium-brightness-slider::-webkit-slider-thumb:hover {
+-//               transform: scale(1.15);
+-//             .premium-brightness-slider::-webkit-slider-thumb:active {
+-//               transform: scale(0.95);
+-//             .premium-brightness-slider::-moz-range-thumb {
+-//               width: 16px;
+-//               height: 16px;
+-//               border-radius: 50%;
+-//               background: #fff;
+-//               cursor: pointer;
+-//               box-shadow: 0 0 8px rgba(0, 0, 0, 0.1), 0 0 0 4.5px #3b82f6;
+-//               border: none;
+-//               transition: transform 0.1s ease;
+-//             .premium-brightness-slider::-moz-range-thumb:hover {
+-//               transform: scale(1.15);
+-//             .premium-brightness-slider::-moz-range-thumb:active {
+-//               transform: scale(0.95);
+-//           `}</style>
+-
+-//           {/* Parts Table */}
+-//           {selectedInterval && (
+-//               initial={{ opacity: 0 }}
+-//               animate={{ opacity: 1 }}
+-//               transition={{ duration: 0.5 }}
+-//             >
+-//                 Parts & Pricing Details
+-//                     {currentParts.map((part, idx) => (
+-//                     ))}
+-//           )}
+-
+-//           {/* Individual Services */}
+-//             className="bss-section-title"
+-//             initial={{ opacity: 0 }}
+-//             whileInView={{ opacity: 1 }}
+-//             viewport={{ once: true }}
+-//             style={{ marginTop: '3rem' }}
+-//           >
+-//             Individual Services & Add-ons
+-//             {individualServices.map((service, idx) => {
+-//                   key={service.id}
+-//                   className="bss-service-card"
+-//                   initial="hidden"
+-//                   whileInView="visible"
+-//                   viewport={{ once: true }}
+-//                   variants={fadeInUp}
+-//                   transition={{ delay: (idx % 4) * 0.1 }}
+-//                 >
+-//                     {service.freeText ? service.freeText : `Γé╣${service.price}`}
+-//                     className={`bss-btn ${isSelected ? 'bss-btn-outline' : 'bss-btn-secondary'}`}
+-//                     style={{ padding: '0.5rem' }}
+-//                     onClick={() => handleAddonToggle(service)}
+-//                   >
+-//                     {isSelected ? 'Added' : <><Plus size={16} style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> Add</>}
+-//               );
+-//         {/* Right Sidebar */}
+-//               {currentParts.filter(p => p.price > 0).length > 0 ? (
+-//                 currentParts.filter(p => p.price > 0).map((part, idx) => (
+-//                 ))
+-//               ) : (
+-//               )}
+-
+-//               {selectedAddons.map(addon => (
+-//               ))}
+-
+-//                 className="bss-btn bss-btn-primary"
+-//                 style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}
+-//                 onClick={() => {
+-//                   if (!selectedInterval) {
+-//                     alert("Please select a service interval first.");
+-//                     return;
+-//                     ? 'Includes: ' + currentParts.filter(p => p.price > 0).map(p => p.name).join(', ') 
+-//                     : 'Basic Inspection';
+-
+-//                     ? ' | Addons: ' + selectedAddons.map(a => a.title).join(', ') 
+-//                     : '';
+-
+-//                   navigate('/garage-selection', {
+-//                     state: {
+-//                       vehicle: {
+-//                         regNumber, brand, model, fuel, batteryType: '12V 45Ah', ownerName: location.state?.ownerName, mobileNumber: location.state?.mobileNumber
+-//                       package: {
+-//                         name: `Service Interval: ${selectedInterval} (${partNames}${addonNames})`,
+-//                         price: grandTotal
+-//               >
+-//                 Select Garage
+-//                 Request Callback
+-//       {/* Bottom Section */}
+-//           {features.map((feature, idx) => (
+-//               key={idx}
+-//               className="bss-feature-item"
+-//               initial={{ opacity: 0, scale: 0.9 }}
+-//               whileInView={{ opacity: 1, scale: 1 }}
+-//               viewport={{ once: true }}
+-//               transition={{ delay: idx * 0.1 }}
+-//             >
+-//           ))}
+-//   );
+-// export default BatteryServiceSelection;
+-
+-
+-
+-
+-
+-
+ import { useState, useEffect } from 'react';
+ import { useNavigate, useLocation } from 'react-router-dom';
++import { Battery, Shield, Award, ShieldCheck, Wrench, TrendingUp, Clock, Star, Check, Zap, Settings, Truck, ArrowLeft, Calendar, CircleCheck, Plus, ChevronRight } from 'lucide-react';
++import { motion, AnimatePresence } from 'framer-motion';
+ import api from '../api/axiosConfig';
+ 
+-
+ const BatteryServiceSelection = () => {
+   const navigate = useNavigate();
+   const location = useLocation();
+@@ -287,31 +22,49 @@ const BatteryServiceSelection = () => {
+   const [packages, setPackages] = useState([]);
+   const [isLoading, setIsLoading] = useState(true);
+   const [selectedPackage, setSelectedPackage] = useState(null);
+-
+-  const serviceIntervals = [
+-    '2 Months / 1500 Km',
+-    '1 Year / 10000 Km',
+-    '2 Year / 20000 Km',
+-    '3 Year / 30000 Km',
+-    '4 Year / 40000 Km',
+-    '5 Year / 50000 Km',
+-    '6 Year / 60000 Km',
+-    '7 Year / 70000 Km',
+-    '8 Year / 80000 Km',
+-    '9 Year / 90000 Km',
+-    '10 Year / 100000 Kms'
+-  ];
++  const [activeTab, setActiveTab] = useState('interval');
++  const [kmInput, setKmInput] = useState('');
++
++  const serviceIntervals = ['2 Months / 1500 Km'];
++  for (let i = 1; i <= 50; i++) {
++    serviceIntervals.push(`${i} Year / ${i * 10000} Km`);
++  }
++
++  const handleKmInputChange = (e) => {
++    const value = e.target.value;
++    setKmInput(value);
++    
++    if (value && !isNaN(value)) {
++      const numValue = parseInt(value, 10);
++      let closestInterval = serviceIntervals[0];
++      let minDiff = Infinity;
++      
++      serviceIntervals.forEach(interval => {
++        const match = interval.match(/(\d+)\s*Kms?/i);
++        if (match) {
++          const intervalKm = parseInt(match[1], 10);
++          const diff = Math.abs(intervalKm - numValue);
++          if (diff < minDiff) {
++            minDiff = diff;
++            closestInterval = interval;
++          }
++        }
++      });
++      
++      setSelectedInterval(closestInterval);
++    }
++  };
+ 
+   useEffect(() => {
+     const fetchPackages = async () => {
+       try {
+         const response = await api.get('/services');
+         const data = response.data;
+-
++        
+         const mappedPackages = data.map((pkg, index) => {
+           let parsedParts = [];
+           if (pkg.parts) {
+-            try { parsedParts = typeof pkg.parts === 'string' ? JSON.parse(pkg.parts) : pkg.parts; } catch (e) { }
++            try { parsedParts = typeof pkg.parts === 'string' ? JSON.parse(pkg.parts) : pkg.parts; } catch(e) {}
+           }
+           return {
+             id: pkg.id.toString(),
+@@ -325,7 +78,7 @@ const BatteryServiceSelection = () => {
+             parts: parsedParts
+           };
+         });
+-
++        
+         setPackages(mappedPackages);
+         if (mappedPackages.length > 0) {
+           setSelectedPackage(mappedPackages[0].id);
+@@ -378,8 +131,6 @@ const BatteryServiceSelection = () => {
+     setSelectedExtraParts([]);
+   }, [selectedInterval]);
+ 
+-
+-
+   const features = [
+     { icon: <ShieldCheck size={20} />, text: 'Genuine Parts' },
+     { icon: <Wrench size={20} />, text: 'Certified Technicians' },
+@@ -416,7 +167,7 @@ const BatteryServiceSelection = () => {
+         let pkgIntervals = [];
+         try {
+           pkgIntervals = typeof pkg.parts === 'string' ? JSON.parse(pkg.parts) : (pkg.parts || []);
+-        } catch (e) { }
++        } catch (e) {}
+ 
+         let isDefaultForInterval = false;
+         let is1500 = false;
+@@ -476,7 +227,6 @@ const BatteryServiceSelection = () => {
+     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+   };
+ 
+-  // Inline Styles
+   const styles = {
+     container: {
+       minHeight: '100vh',
+@@ -524,18 +274,6 @@ const BatteryServiceSelection = () => {
+       transition: 'all 0.2s',
+       boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+     },
+-    headerBadge: {
+-      display: 'flex',
+-      alignItems: 'center',
+-      gap: '8px',
+-      background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+-      color: 'white',
+-      padding: '8px 16px',
+-      borderRadius: '20px',
+-      fontSize: '13px',
+-      fontWeight: 600,
+-      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+-    },
+     titleSection: {
+       marginTop: '8px'
+     },
+@@ -552,43 +290,6 @@ const BatteryServiceSelection = () => {
+       margin: '0',
+       fontWeight: 400
+     },
+-    packagesGrid: {
+-      display: 'grid',
+-      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+-      gap: '16px',
+-      marginBottom: '24px'
+-    },
+-    packageCard: {
+-      background: 'white',
+-      borderRadius: '16px',
+-      padding: '20px',
+-      border: '2px solid #e2e8f0',
+-      cursor: 'pointer',
+-      transition: 'all 0.2s',
+-      display: 'flex',
+-      flexDirection: 'column',
+-      gap: '8px'
+-    },
+-    packageSelected: {
+-      borderColor: '#3b82f6',
+-      background: '#eff6ff',
+-      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+-    },
+-    packageTitle: {
+-      fontSize: '16px',
+-      fontWeight: 700,
+-      color: '#1e293b'
+-    },
+-    packagePrice: {
+-      fontSize: '20px',
+-      fontWeight: 800,
+-      color: '#3b82f6'
+-    },
+-    packageDesc: {
+-      fontSize: '13px',
+-      color: '#64748b',
+-      lineHeight: '1.5'
+-    },
+     sliderContainer: {
+       background: 'white',
+       borderRadius: '16px',
+@@ -871,17 +572,6 @@ const BatteryServiceSelection = () => {
+       fontWeight: 600,
+       color: '#1e293b'
+     },
+-    warrantyRow: {
+-      borderBottom: 'none',
+-      paddingBottom: 0
+-    },
+-    warrantyActive: {
+-      display: 'flex',
+-      alignItems: 'center',
+-      gap: '6px',
+-      color: '#22c55e',
+-      fontSize: '13px'
+-    },
+     summaryItems: {
+       display: 'flex',
+       flexDirection: 'column',
+@@ -954,22 +644,6 @@ const BatteryServiceSelection = () => {
+       boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+       width: '100%'
+     },
+-    btnOutline: {
+-      display: 'flex',
+-      alignItems: 'center',
+-      justifyContent: 'center',
+-      gap: '8px',
+-      background: 'white',
+-      color: '#475569',
+-      border: '2px solid #e2e8f0',
+-      padding: '12px 24px',
+-      borderRadius: '12px',
+-      fontSize: '14px',
+-      fontWeight: 600,
+-      cursor: 'pointer',
+-      transition: 'all 0.2s',
+-      width: '100%'
+-    },
+     bottom: {
+       maxWidth: '1440px',
+       margin: '40px auto 0',
+@@ -1000,19 +674,38 @@ const BatteryServiceSelection = () => {
+       borderRadius: '10px',
+       transition: 'all 0.2s'
+     },
+-    featureIcon: {
+-      color: '#3b82f6',
++    tabsContainer: {
+       display: 'flex',
+-      alignItems: 'center'
++      gap: '12px',
++      marginBottom: '24px',
++      background: 'white',
++      padding: '8px',
++      borderRadius: '16px',
++      border: '1px solid rgba(226, 232, 240, 0.8)',
++      boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+     },
+-    featureText: {
+-      fontSize: '13px',
+-      fontWeight: 500,
+-      color: '#334155'
++    tabButton: {
++      flex: 1,
++      padding: '14px 20px',
++      borderRadius: '12px',
++      border: 'none',
++      fontSize: '15px',
++      fontWeight: 600,
++      cursor: 'pointer',
++      transition: 'all 0.2s',
++      textAlign: 'center'
++    },
++    activeTab: {
++      background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
++      color: 'white',
++      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
++    },
++    inactiveTab: {
++      background: 'transparent',
++      color: '#64748b'
+     }
+   };
+ 
+-  // Slider thumb styles via style tag
+   const sliderStyles = `
+     .bss-slider::-webkit-slider-thumb {
+       -webkit-appearance: none;
+@@ -1056,206 +749,238 @@ const BatteryServiceSelection = () => {
+     <div style={styles.container}>
+       <style>{sliderStyles}</style>
+       <div style={styles.main} className="bss-main-grid">
+-        {/* Left Pane */}
+         <div style={styles.leftPane}>
+-          {/* Header */}
+           <div style={styles.header}>
+             <button style={styles.backBtn} onClick={() => navigate(-1)}>
+               <ArrowLeft size={20} />
+               <span>Back</span>
+             </button>
+-
+           </div>
+ 
+-          {/* Title */}
+           <motion.div
+             initial="hidden"
+             animate="visible"
+             variants={fadeInUp}
+-            style={styles.titleSection}
++            style={styles.tabsContainer}
+           >
+-            <h1 style={styles.mainTitle}>Select Service Interval</h1>
+-            <p style={styles.subtitle}>Choose the right maintenance schedule for your vehicle's battery health</p>
++            <button 
++              style={{ ...styles.tabButton, ...(activeTab === 'interval' ? styles.activeTab : styles.inactiveTab) }}
++              onClick={() => setActiveTab('interval')}
++            >
++              Select Service Interval
++            </button>
++            <button 
++              style={{ ...styles.tabButton, ...(activeTab === 'addons' ? styles.activeTab : styles.inactiveTab) }}
++              onClick={() => setActiveTab('addons')}
++            >
++              Add-on Services
++            </button>
+           </motion.div>
+ 
++          {activeTab === 'interval' && (
++            <>
++              <motion.div
++                initial="hidden"
++                animate="visible"
++                variants={fadeInUp}
++                style={styles.titleSection}
++              >
++                <h1 style={styles.mainTitle}>Select Service Interval</h1>
++                <p style={styles.subtitle}>Choose the right maintenance schedule for your vehicle's battery health</p>
++              </motion.div>
+ 
+-
+-          {/* Slider */}
+-          <motion.div
+-            initial="hidden"
+-            animate="visible"
+-            variants={fadeInUp}
+-            style={styles.sliderContainer}
+-          >
+-            <div style={styles.sliderHeader}>
+-              <div style={styles.sliderLabel}>
+-                <Calendar size={18} />
+-                <span>{selectedInterval || 'Slide to select interval'}</span>
+-              </div>
+-              {selectedInterval && (
+-                <span style={styles.sliderIndex}>
+-                  {serviceIntervals.indexOf(selectedInterval) + 1} of {serviceIntervals.length}
+-                </span>
+-              )}
+-            </div>
+-            <div style={styles.sliderWrapper}>
+-              <input
+-                type="range"
+-                min="0"
+-                max={serviceIntervals.length - 1}
+-                step="1"
+-                value={selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0}
+-                onChange={(e) => setSelectedInterval(serviceIntervals[parseInt(e.target.value)])}
+-                style={styles.slider}
+-                className="bss-slider"
+-              />
+-              <div style={styles.sliderTicks}>
+-                <span>{serviceIntervals[0]}</span>
+-                <span>{serviceIntervals[Math.floor(serviceIntervals.length / 2)]}</span>
+-                <span>{serviceIntervals[serviceIntervals.length - 1]}</span>
+-              </div>
+-            </div>
+-          </motion.div>
+-
+-          {/* Parts Table */}
+-          <AnimatePresence mode="wait">
+-            {(selectedInterval || selectedPackage) && (
+               <motion.div
+-                key="parts-table"
+-                initial={{ opacity: 0, height: 0 }}
+-                animate={{ opacity: 1, height: 'auto' }}
+-                exit={{ opacity: 0, height: 0 }}
+-                transition={{ duration: 0.4 }}
+-                style={styles.partsSection}
++                initial="hidden"
++                animate="visible"
++                variants={fadeInUp}
++                style={styles.sliderContainer}
+               >
+-                <div style={styles.sectionHeader}>
+-                  <h2 style={styles.sectionTitle}>Parts & Pricing Details</h2>
+-                  <span style={styles.sectionBadge}>{currentParts.length} items</span>
++                <div style={styles.sliderHeader}>
++                  <div style={styles.sliderLabel}>
++                    <Calendar size={18} />
++                    <span>{selectedInterval || 'Slide to select interval'}</span>
++                  </div>
++                  {selectedInterval && (
++                    <span style={styles.sliderIndex}>
++                      {serviceIntervals.indexOf(selectedInterval) + 1} of {serviceIntervals.length}
++                    </span>
++                  )}
+                 </div>
+-                <div style={styles.tableWrapper}>
+-                  <table style={styles.partsTable}>
+-                    <thead style={styles.tableHead}>
+-                      <tr>
+-                        <th style={styles.tableHeadCell}>Component</th>
+-                        <th style={{ ...styles.tableHeadCell, textAlign: 'right' }}>Price (INR)</th>
+-                      </tr>
+-                    </thead>
+-                    <tbody>
+-                      {currentParts.map((part, idx) => {
+-                        const isExtraSelected = selectedExtraParts.some(p => p.id === part.id);
+-                        return (
+-                          <motion.tr
+-                            key={idx}
+-                            initial={{ opacity: 0, x: -10 }}
+-                            animate={{ opacity: 1, x: 0 }}
+-                            transition={{ delay: idx * 0.05 }}
+-                            style={{ ...styles.tableRow, ...(part.isDefault || isExtraSelected ? styles.activeRow : {}) }}
+-                          >
+-                            <td style={styles.tableCell}>
+-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+-                                {!part.isIncludedIn1500 && !part.isDefault && (
+-                                  <input
+-                                    type="checkbox"
+-                                    checked={isExtraSelected}
+-                                    onChange={() => handleExtraPartToggle(part)}
+-                                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+-                                  />
+-                                )}
+-                                {(!part.isIncludedIn1500 && part.isDefault) && (
+-                                  <Check size={16} color="#22c55e" />
+-                                )}
+-                                <span style={styles.partIcon}>{part.icon}</span>
+-                                <span style={styles.partName}>{part.name}</span>
+-                              </div>
+-                            </td>
+-                            <td style={{ ...styles.tableCell, textAlign: 'right' }}>
+-                              {part.isIncludedIn1500 ? (
+-                                <span style={styles.partFree}>Included</span>
+-                              ) : part.isDefault ? (
+-                                <span style={styles.partPrice}>{formatPrice(part.basePrice)}</span>
+-                              ) : (
+-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+-                                  {!isExtraSelected && (
+-                                    <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>Not Included</span>
+-                                  )}
+-                                  <span style={{ ...styles.partPrice, color: isExtraSelected ? '#3b82f6' : '#64748b' }}>
+-                                    {isExtraSelected ? formatPrice(part.basePrice) : `+ ${formatPrice(part.basePrice)}`}
+-                                  </span>
+-                                </div>
+-                              )}
+-                            </td>
+-                          </motion.tr>
+-                        );
+-                      })}
+-                    </tbody>
+-                  </table>
++
++                <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
++                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#475569' }}>Or enter kilometers:</span>
++                  <input 
++                    type="number" 
++                    value={kmInput}
++                    onChange={handleKmInputChange}
++                    placeholder="e.g. 10000"
++                    style={{
++                      padding: '8px 12px',
++                      borderRadius: '8px',
++                      border: '1px solid #cbd5e1',
++                      outline: 'none',
++                      fontSize: '14px',
++                      width: '120px'
++                    }}
++                  />
++                  <span style={{ fontSize: '14px', color: '#94a3b8' }}>Km</span>
++                </div>
++
++                <div style={styles.sliderWrapper}>
++                  <input
++                    type="range"
++                    min="0"
++                    max={serviceIntervals.length - 1}
++                    step="1"
++                    value={selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0}
++                    onChange={(e) => setSelectedInterval(serviceIntervals[parseInt(e.target.value)])}
++                    style={{ ...styles.slider, opacity: kmInput ? 0.5 : 1, cursor: kmInput ? 'not-allowed' : 'pointer' }}
++                    className="bss-slider"
++                    disabled={kmInput !== ''}
++                  />
++                  <div style={styles.sliderTicks}>
++                    <span>{serviceIntervals[0]}</span>
++                    <span>{serviceIntervals[Math.floor(serviceIntervals.length / 2)]}</span>
++                    <span>{serviceIntervals[serviceIntervals.length - 1]}</span>
++                  </div>
+                 </div>
+               </motion.div>
+-            )}
+-          </AnimatePresence>
+ 
+-          {/* Add-ons */}
+-          <motion.div
+-            initial="hidden"
+-            whileInView="visible"
+-            viewport={{ once: true, margin: "-100px" }}
+-            variants={fadeInUp}
+-            style={styles.addonsSection}
+-          >
+-            <div style={styles.sectionHeader}>
+-              <h2 style={styles.sectionTitle}>Add-on Services</h2>
+-              <span style={styles.sectionBadge}>{selectedAddons.length} selected</span>
+-            </div>
+-            <p style={styles.subtitle}>Enhance your service with these additional care options</p>
++              <AnimatePresence mode="wait">
++                {(selectedInterval || selectedPackage) && (
++                  <motion.div
++                    key="parts-table"
++                    initial={{ opacity: 0, height: 0 }}
++                    animate={{ opacity: 1, height: 'auto' }}
++                    exit={{ opacity: 0, height: 0 }}
++                    transition={{ duration: 0.4 }}
++                    style={styles.partsSection}
++                  >
++                    <div style={styles.sectionHeader}>
++                      <h2 style={styles.sectionTitle}>Parts & Pricing Details</h2>
++                      <span style={styles.sectionBadge}>{currentParts.length} items</span>
++                    </div>
++                    <div style={styles.tableWrapper}>
++                      <table style={styles.partsTable}>
++                        <thead style={styles.tableHead}>
++                          <tr>
++                            <th style={styles.tableHeadCell}>Component</th>
++                            <th style={{ ...styles.tableHeadCell, textAlign: 'right' }}>Price (INR)</th>
++                          </tr>
++                        </thead>
++                        <tbody>
++                          {currentParts.map((part, idx) => {
++                            const isExtraSelected = selectedExtraParts.some(p => p.id === part.id);
++                            return (
++                              <motion.tr
++                                key={idx}
++                                initial={{ opacity: 0, x: -10 }}
++                                animate={{ opacity: 1, x: 0 }}
++                                transition={{ delay: idx * 0.05 }}
++                                style={{ ...styles.tableRow, ...(part.isDefault || isExtraSelected ? styles.activeRow : {}) }}
++                              >
++                                <td style={styles.tableCell}>
++                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
++                                    {(!part.isIncludedIn1500 && !part.isDefault) && (
++                                      <div style={{ width: '16px', height: '16px' }} />
++                                    )}
++                                    {(!part.isIncludedIn1500 && part.isDefault) && (
++                                      <Check size={16} color="#22c55e" />
++                                    )}
++                                    <span style={styles.partIcon}>{part.icon}</span>
++                                    <span style={styles.partName}>{part.name}</span>
++                                  </div>
++                                </td>
++                                <td style={{ ...styles.tableCell, textAlign: 'right' }}>
++                                  {part.isIncludedIn1500 ? (
++                                    <span style={styles.partFree}>Included</span>
++                                  ) : part.isDefault ? (
++                                    <span style={styles.partPrice}>{formatPrice(part.basePrice)}</span>
++                                  ) : (
++                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
++                                      {!isExtraSelected && (
++                                        <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>Not Included</span>
++                                      )}
++                                      <span style={{ ...styles.partPrice, color: isExtraSelected ? '#3b82f6' : '#64748b' }}>
++                                        {isExtraSelected ? formatPrice(part.basePrice) : `+ ${formatPrice(part.basePrice)}`}
++                                      </span>
++                                    </div>
++                                  )}
++                                </td>
++                              </motion.tr>
++                            );
++                          })}
++                        </tbody>
++                      </table>
++                    </div>
++                  </motion.div>
++                )}
++              </AnimatePresence>
++            </>
++          )}
+ 
++          {activeTab === 'addons' && (
+             <motion.div
+-              style={styles.servicesGrid}
+-              variants={staggerContainer}
+               initial="hidden"
+               whileInView="visible"
+-              viewport={{ once: true }}
+-              className="bss-services-grid"
++              viewport={{ once: true, margin: "-100px" }}
++              variants={fadeInUp}
++              style={styles.addonsSection}
+             >
+-              {individualServices.map((service, idx) => {
+-                const isSelected = selectedAddons.some(a => a.id === service.id);
+-                return (
+-                  <motion.div
+-                    key={service.id}
+-                    style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
+-                    variants={fadeInUp}
+-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+-                    onClick={() => handleAddonToggle(service)}
+-                  >
+-                    <div style={styles.serviceIconWrapper}>
+-                      <div style={styles.serviceIcon}>{service.icon}</div>
+-                      {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
+-                    </div>
+-                    <div style={styles.serviceInfo}>
+-                      <div style={styles.serviceTitle}>{service.title}</div>
+-                      <div style={styles.serviceDesc}>{service.desc}</div>
+-                    </div>
+-                    <div style={styles.serviceAction}>
+-                      <div style={styles.servicePrice}>
+-                        {service.freeText ? service.freeText : formatPrice(service.price)}
++              <div style={styles.sectionHeader}>
++                <h2 style={styles.sectionTitle}>Add-on Services</h2>
++                <span style={styles.sectionBadge}>{selectedAddons.length} selected</span>
++              </div>
++              <p style={styles.subtitle}>Enhance your service with these additional care options</p>
++
++              <motion.div
++                style={styles.servicesGrid}
++                variants={staggerContainer}
++                initial="hidden"
++                whileInView="visible"
++                viewport={{ once: true }}
++                className="bss-services-grid"
++              >
++                {individualServices.map((service, idx) => {
++                  const isSelected = selectedAddons.some(a => a.id === service.id);
++                  return (
++                    <motion.div
++                      key={service.id}
++                      style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
++                      variants={fadeInUp}
++                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
++                      onClick={() => handleAddonToggle(service)}
++                    >
++                      <div style={styles.serviceIconWrapper}>
++                        <div style={styles.serviceIcon}>{service.icon}</div>
++                        {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
+                       </div>
+-                      <button
+-                        style={{ ...styles.addonBtn, ...(isSelected ? styles.addonAdded : {}) }}
+-                        onClick={(e) => {
+-                          e.stopPropagation();
+-                          handleAddonToggle(service);
+-                        }}
+-                      >
+-                        {isSelected ? <Check size={16} /> : <Plus size={16} />}
+-                      </button>
+-                    </div>
+-                  </motion.div>
+-                );
+-              })}
++                      <div style={styles.serviceInfo}>
++                        <div style={styles.serviceTitle}>{service.title}</div>
++                        <div style={styles.serviceDesc}>{service.desc}</div>
++                      </div>
++                      <div style={styles.serviceAction}>
++                        <div style={styles.servicePrice}>
++                          {service.freeText ? service.freeText : formatPrice(service.price)}
++                        </div>
++                        <button
++                          style={{ ...styles.addonBtn, ...(isSelected ? styles.addonAdded : {}) }}
++                          onClick={(e) => {
++                            e.stopPropagation();
++                            handleAddonToggle(service);
++                          }}
++                        >
++                          {isSelected ? <Check size={16} /> : <Plus size={16} />}
++                        </button>
++                      </div>
++                    </motion.div>
++                  );
++                })}
++              </motion.div>
+             </motion.div>
+-          </motion.div>
++          )}
+         </div>
+ 
+-        {/* Right Sidebar */}
+         <div style={styles.rightPane} className="bss-right-pane">
+           <motion.div
+             initial={{ opacity: 0, x: 30 }}
+@@ -1263,12 +988,38 @@ const BatteryServiceSelection = () => {
+             transition={{ duration: 0.6 }}
+             style={styles.sidebar}
+           >
+-            {/* Order Summary */}
++            <div style={styles.sidebarCard}>
++              <div style={styles.cardHeader}>
++                <h3 style={styles.sidebarTitle}>Vehicle Details</h3>
++                <div style={styles.vehicleBadge}>
++                  <span style={styles.badgeDot}></span>
++                  Active
++                </div>
++              </div>
++              <div style={styles.vehicleInfo}>
++                <div style={styles.vehicleRow}>
++                  <span style={styles.vehicleLabel}>Registration</span>
++                  <span style={styles.vehicleValue}>{regNumber}</span>
++                </div>
++                <div style={styles.vehicleRow}>
++                  <span style={styles.vehicleLabel}>Brand</span>
++                  <span style={styles.vehicleValue}>{brand}</span>
++                </div>
++                <div style={styles.vehicleRow}>
++                  <span style={styles.vehicleLabel}>Model</span>
++                  <span style={styles.vehicleValue}>{model}</span>
++                </div>
++                <div style={styles.vehicleRow}>
++                  <span style={styles.vehicleLabel}>Fuel Type</span>
++                  <span style={styles.vehicleValue}>{fuel}</span>
++                </div>
++              </div>
++            </div>
++
+             <div style={styles.sidebarCard}>
+               <h3 style={styles.sidebarTitle}>Order Summary</h3>
+ 
+               <div style={styles.summaryItems}>
+-
+                 <div style={{ ...styles.summaryRow, ...styles.summaryMain }}>
+                   <span>Service Interval</span>
+                   <span style={styles.summaryHighlight}>
+@@ -1292,7 +1043,7 @@ const BatteryServiceSelection = () => {
+ 
+                 {selectedExtraParts.map((part, idx) => (
+                   <div key={`extra-${idx}`} style={{ ...styles.summaryRow, ...styles.summarySub }}>
+-                    <span>{part.icon} {part.name} <span style={{ color: '#3b82f6', fontSize: '11px' }}>(Added)</span></span>
++                    <span>{part.icon} {part.name} <span style={{color: '#3b82f6', fontSize: '11px'}}>(Added)</span></span>
+                     <span>{formatPrice(part.basePrice)}</span>
+                   </div>
+                 ))}
+@@ -1368,7 +1119,6 @@ const BatteryServiceSelection = () => {
+         </div>
+       </div>
+ 
+-      {/* Bottom Section */}
+       <motion.div
+         style={styles.bottom}
+         initial={{ opacity: 0, y: 30 }}
+diff --git a/README/src/pages/CarDetails.css b/ui change/src/pages/CarDetails.css
+index b81df92..46f714c 100644
+--- a/README/src/pages/CarDetails.css
++++ b/ui change/src/pages/CarDetails.css	
+@@ -17,7 +17,8 @@
+   --button-text: #ffffff;
+ 
+   min-height: 100vh;
+-  padding-top: 80px; /* Prevent navbar overlap */
++  padding-top: 80px;
++  /* Prevent navbar overlap */
+   background-color: var(--bg-main);
+   background-image:
+     radial-gradient(at 0% 0%, hsla(217, 100%, 92%, 1) 0, transparent 50%),
+@@ -429,23 +430,38 @@
+ @media (max-width: 900px) {
+   .car-details-page-wrapper {
+     padding-top: 60px;
++    height: 100vh;
++    overflow: hidden;
+   }
+ 
+   .split-layout-container {
+     flex-direction: column-reverse;
++    height: calc(100vh - 60px);
+   }
+ 
+   .left-marketing-pane {
+     padding: 0;
+     border-right: none;
+-    border-bottom: 1px solid var(--border-color);
+-    min-height: 40vh;
++    border-bottom: none;
++    min-height: auto;
++    flex: 0.35;
++    display: flex;
++    align-items: center;
++    justify-content: center;
++  }
++
++  .left-marketing-pane img {
++    width: 100vw;
++    max-height: 120%;
++    object-fit: contain;
+   }
+ 
+   .right-selection-pane {
+-    padding: 2rem 1rem;
++    padding: 0.5rem;
+     border-left: none;
+     align-items: center;
++    justify-content: center;
++    flex: 0.65;
+   }
+ 
+   .back-nav-arrow-btn {
+@@ -456,11 +472,36 @@
+   }
+ 
+   .selection-card-container {
+-    padding: 2.5rem 1.5rem;
+-    margin-top: 2.5rem;
++    padding: 1.5rem 1rem;
++    margin-top: -3rem;
++    width: 95%;
++    position: relative;
++    z-index: 10;
++  }
++
++  .selection-title {
++    font-size: 1.5rem;
++    margin-bottom: 0.25rem;
++  }
++
++  .selection-subtitle {
++    margin-bottom: 1rem;
++    font-size: 0.9rem;
++  }
++
++  .car-selection-form {
++    gap: 0.8rem;
++  }
++
++  .selector-field-btn {
++    height: 50px;
++  }
++
++  .dropdown-field-wrapper {
++    margin-bottom: 0 !important;
+   }
+ 
+   .marketing-heading {
+     font-size: 2.8rem;
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/README/src/pages/CarDetails.jsx b/ui change/src/pages/CarDetails.jsx
+index 4d25f55..32147fc 100644
+--- a/README/src/pages/CarDetails.jsx
++++ b/ui change/src/pages/CarDetails.jsx	
+@@ -90,7 +90,7 @@ const CarDetails = () => {
+     if (modelName.includes('tucson')) return tucson;
+     if (modelName.includes('venue')) return redHyundai;
+     if (modelName.includes('i20')) return greenHyundai;
+-    
++
+     // Default fallback image (generic Hyundai instead of Tesla)
+     return blueHyundai;
+   };
+@@ -111,8 +111,7 @@ const CarDetails = () => {
+         <div className="right-selection-pane">
+ 
+           <div className="selection-card-container">
+-            <h2 className="selection-title">Book your car service</h2>
+-            <p className="selection-subtitle">Help us identify your car to get started</p>
++
+ 
+             <form onSubmit={handleNext} className="car-selection-form">
+               {/* Brand Field (Fixed) */}
+diff --git a/README/src/pages/DateTimeSelection.jsx b/ui change/src/pages/DateTimeSelection.jsx
+index 00b2d1c..2ab9e69 100644
+--- a/README/src/pages/DateTimeSelection.jsx
++++ b/ui change/src/pages/DateTimeSelection.jsx	
+@@ -10,7 +10,6 @@ import { useState, useRef, useEffect } from 'react';
+ import { useNavigate, useLocation } from 'react-router-dom';
+ import './DateTimeSelection.css';
+ import garagePlaceholder from '../assets/car_background.png';
+-import api from '../api/axiosConfig';
+ 
+ const timeSlots = [
+   '10:00 AM - 11:00 AM',
+@@ -38,7 +37,7 @@ const DateTimeSelection = () => {
+   const navigate = useNavigate();
+   const location = useLocation();
+   const datesList = generateDates(14); // Next 14 days
+-
++  
+   const [selectedDate, setSelectedDate] = useState(datesList[0]);
+   const [selectedTime, setSelectedTime] = useState('');
+   const [pickupDrop, setPickupDrop] = useState(true);
+@@ -49,10 +48,10 @@ const DateTimeSelection = () => {
+   const carouselRef = useRef(null);
+ 
+   useEffect(() => {
+-    api.get('/bookings/slots')
+-      .then(res => res.data)
++    fetch('http://localhost:5000/api/bookings/slots')
++      .then(res => res.json())
+       .then(data => {
+-        if (data.success) setBookedSlots(data.data);
++        if(data.success) setBookedSlots(data.data);
+       })
+       .catch(console.error);
+   }, []);
+@@ -65,14 +64,14 @@ const DateTimeSelection = () => {
+     mobileNumber: '9999999999',
+     regNumber: 'MH-10-DY-0049'
+   };
+-
++  
+   // Try to use brand/model from location.state direct if vehicle object is not present
+   if (!location.state?.vehicle && location.state?.brand) {
+-    vehicleState.brand = location.state.brand;
+-    vehicleState.model = location.state.model;
+-    vehicleState.ownerName = location.state.ownerName;
+-    vehicleState.mobileNumber = location.state.mobileNumber;
+-    vehicleState.regNumber = location.state.regNumber;
++     vehicleState.brand = location.state.brand;
++     vehicleState.model = location.state.model;
++     vehicleState.ownerName = location.state.ownerName;
++     vehicleState.mobileNumber = location.state.mobileNumber;
++     vehicleState.regNumber = location.state.regNumber;
+   }
+ 
+   const pkgState = location.state?.package || {
+@@ -110,7 +109,7 @@ const DateTimeSelection = () => {
+     const dateStr = dateObj.toISOString().split('T')[0];
+     let totalBooked = 0;
+     bookedSlots.forEach(s => {
+-      if (s.bookingDate === dateStr) totalBooked += s.count;
++      if(s.bookingDate === dateStr) totalBooked += s.count;
+     });
+     return Math.max(0, 24 - totalBooked);
+   };
+@@ -132,22 +131,14 @@ const DateTimeSelection = () => {
+     setIsSubmitting(true);
+     setSubmitError('');
+ 
+-    const dateStr = selectedDate.toISOString().split('T')[0];
+     const dateFormatted = selectedDate.toLocaleDateString('en-GB');
+-    // Extract just the start time (e.g. "10:00 AM")
+-    const startTimeStr = selectedTime.split(' - ')[0];
+     const regNo = vehicleState.regNumber || 'N/A';
+     const ownerName = vehicleState.ownerName || 'Guest User';
+     const mobileNumber = vehicleState.mobileNumber || '9999999999';
+-    const nameParts = ownerName.trim().split(' ');
+-    const firstName = nameParts[0];
+-    const lastName = nameParts.slice(1).join(' ') || 'User';
+ 
+     try {
+-      // Bypass backend APIs and direct all to WhatsApp
+       const rawMessage = `Hello PB Wheels!\n\nI would like to confirm my booking:\n≡ƒÜù *Vehicle*: ${vehicleState.brand} ${vehicleState.model} (${regNo})\n≡ƒæñ *Name*: ${ownerName}\n≡ƒô₧ *Phone*: ${mobileNumber}\n≡ƒ¢á∩╕Å *Service*: ${pkgState.name}\n≡ƒÅó *Garage*: ${garageState.name}\n≡ƒôà *Date & Time*: ${dateFormatted} at ${selectedTime}\n≡ƒÜò *Pickup/Drop*: ${pickupDrop ? 'Yes' : 'No'}\n≡ƒÆ░ *Estimated Price*: Γé╣${pkgState.price.toLocaleString()}\n\nPlease confirm my appointment!`;
+-
+-      // Use the provided number
++      
+       window.open(`https://wa.me/919699938509?text=${encodeURIComponent(rawMessage)}`, '_blank');
+       setIsSuccess(true);
+     } catch (err) {
+@@ -195,10 +186,10 @@ const DateTimeSelection = () => {
+                 const isSelected = selectedDate && d.toDateString() === selectedDate.toDateString();
+                 const isSunday = d.getDay() === 0;
+                 const slotsLeft = isSunday ? 'Closed' : `${getDayTotalSlots(d)} Slots`;
+-
++                
+                 return (
+-                  <div
+-                    key={index}
++                  <div 
++                    key={index} 
+                     className={`dt-date-card ${isSelected ? 'active' : ''} ${isSunday ? 'closed' : ''}`}
+                     onClick={() => !isSunday && setSelectedDate(d)}
+                   >
+@@ -223,7 +214,7 @@ const DateTimeSelection = () => {
+             {timeSlots.map((time) => {
+               const isSelected = selectedTime === time;
+               const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+-              const startTimeStr = time.split(' - ')[0];
++              const startTimeStr = time.split(' - ')[0]; 
+               const timeMapping = {
+                 '09:00 AM': '09:00:00', '10:00 AM': '10:00:00', '11:00 AM': '11:00:00', '12:00 PM': '12:00:00',
+                 '01:00 PM': '13:00:00', '02:00 PM': '14:00:00', '03:00 PM': '15:00:00', '04:00 PM': '16:00:00',
+@@ -235,8 +226,8 @@ const DateTimeSelection = () => {
+               const isSoldOut = slots === 0;
+ 
+               return (
+-                <div
+-                  key={time}
++                <div 
++                  key={time} 
+                   className={`dt-time-card ${isSelected ? 'active' : ''} ${isSoldOut ? 'sold-out' : ''}`}
+                   onClick={() => !isSoldOut && setSelectedTime(time)}
+                   style={{ opacity: isSoldOut ? 0.5 : 1, cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
+@@ -326,8 +317,8 @@ const DateTimeSelection = () => {
+                 <span className="slider"></span>
+               </label>
+             </div>
+-            <button
+-              className="dt-btn-schedule"
++            <button 
++              className="dt-btn-schedule" 
+               onClick={onSubmit}
+               disabled={isSubmitting}
+             >
+diff --git a/README/src/pages/Home.css b/ui change/src/pages/Home.css
+index efffb9a..17477a1 100644
+--- a/README/src/pages/Home.css
++++ b/ui change/src/pages/Home.css	
+@@ -5,6 +5,7 @@
+   width: 100%;
+   background-color: #ffffff;
+   overflow-x: hidden;
++  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+ }
+ 
+ /* Full Width Hero */
+@@ -64,7 +65,7 @@
+ 
+ .hero-text-block {
+   text-align: center;
+-  margin-bottom: 3rem;
++  margin-bottom: 1.5rem;
+ }
+ 
+ .hero-title {
+@@ -137,6 +138,7 @@
+   margin-top: 2rem;
+   letter-spacing: 2px;
+   text-transform: uppercase;
++  white-space: nowrap;
+   animation: glowing-btn 8s linear infinite, bounce-pulse 2s infinite ease-in-out;
+ }
+ 
+@@ -174,7 +176,7 @@
+ /* Common Section Styles */
+ .section-header {
+   text-align: center;
+-  margin-bottom: 5rem;
++  margin-bottom: 1.5rem;
+   position: relative;
+ }
+ 
+@@ -218,7 +220,7 @@
+   width: 100%;
+   height: 1px;
+   background: linear-gradient(90deg, transparent, rgba(0, 44, 95, 0.2), transparent);
+-  margin: 3rem 0;
++  margin: 1rem 0;
+   position: relative;
+ }
+ 
+@@ -236,92 +238,10 @@
+ } */
+ 
+ 
+-/* --- How It Works Section --- */
+-.how-it-works-section {
+-  max-width: 1400px;
+-  margin: 6rem auto;
+-  padding: 0 2rem;
+-  position: relative;
+-  z-index: 10;
+-}
+-
+-.steps-container {
+-  display: grid;
+-  grid-template-columns: repeat(3, 1fr);
+-  gap: 2.5rem;
+-}
+-
+-.step-card {
+-  position: relative;
+-  background: rgba(255, 255, 255, 0.6);
+-  backdrop-filter: blur(20px);
+-  border: 1px solid rgba(0, 0, 0, 0.05);
+-  border-radius: 28px;
+-  padding: 3rem 2.5rem;
+-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+-  overflow: hidden;
+-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+-}
+-
+-.step-card:hover {
+-  transform: translateY(-10px);
+-  background: #ffffff;
+-  box-shadow: 0 25px 50px rgba(0, 44, 95, 0.15);
+-  border-color: rgba(0, 44, 95, 0.2);
+-}
+-
+-.step-number {
+-  position: absolute;
+-  top: -20px;
+-  right: -10px;
+-  font-size: 8rem;
+-  font-weight: 900;
+-  color: rgba(0, 44, 95, 0.05);
+-  z-index: 0;
+-  pointer-events: none;
+-  transition: color 0.4s ease;
+-}
+-
+-.step-card:hover .step-number {
+-  color: rgba(0, 44, 95, 0.15);
+-}
+-
+-.step-icon-wrapper {
+-  position: relative;
+-  z-index: 1;
+-  width: 70px;
+-  height: 70px;
+-  background: linear-gradient(135deg, #002C5F, #004080);
+-  color: #ffffff;
+-  border-radius: 20px;
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  margin-bottom: 2rem;
+-  box-shadow: 0 10px 20px rgba(0, 44, 95, 0.3);
+-}
+-
+-.step-title {
+-  position: relative;
+-  z-index: 1;
+-  font-size: 1.6rem;
+-  font-weight: 800;
+-  color: #0f172a;
+-  margin-bottom: 1rem;
+-}
+-
+-.step-desc {
+-  position: relative;
+-  z-index: 1;
+-  font-size: 1.1rem;
+-  color: #64748b;
+-  line-height: 1.6;
+-}
+-
+ /* --- Premium Services Grid --- */
+ .services-overview-section {
+   max-width: 1400px;
+-  margin: 6rem auto;
++  margin: 1.5rem auto;
+   padding: 0 2rem;
+   position: relative;
+ }
+@@ -414,77 +334,359 @@
+   color: #ffffff;
+ }
+ 
+-/* --- Trust & Stats Section --- */
+-.trust-stats-section {
+-  max-width: 1200px;
+-  margin: 6rem auto 10rem;
++/* --- Trust & Stats Section: Light Bento Mode --- */
++.legacy-section-wrapper {
++  background: #ffffff;
++  padding: 4rem 0;
++  margin: 2rem 0;
++  position: relative;
++  overflow: hidden;
++}
++
++.legacy-section-wrapper::before {
++  content: '';
++  position: absolute;
++  top: -50%;
++  left: -50%;
++  width: 200%;
++  height: 200%;
++  background: radial-gradient(circle, rgba(0, 162, 255, 0.05) 0%, transparent 60%);
++  pointer-events: none;
++  z-index: 0;
++}
++
++.trust-stats-section.dark-mode-stats {
++  max-width: 1400px;
++  margin: 0 auto;
+   padding: 0 2rem;
++  position: relative;
++  z-index: 1;
++}
++
++.dark-header .section-title {
++  color: #0f172a;
++}
++
++.dark-header .section-subtitle {
++  color: #475569;
++}
++
++.text-glow-dark {
++  text-shadow: 0 0 30px rgba(0, 162, 255, 0.1);
++}
++
++.stats-bento-grid {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 1.5rem;
+ }
+ 
+-.stats-container {
++.bento-stat-card {
++  position: relative;
++  background: rgba(255, 255, 255, 0.8);
++  border: 1px solid rgba(0, 44, 95, 0.1);
++  border-radius: 24px;
++  padding: 2.5rem 1.5rem;
++  overflow: hidden;
++  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+   display: flex;
+-  justify-content: space-between;
++  justify-content: center;
+   align-items: center;
+-  background: rgba(255, 255, 255, 0.8);
+-  backdrop-filter: blur(20px);
+-  border: 1px solid rgba(0, 0, 0, 0.05);
+-  border-radius: 32px;
+-  padding: 4rem;
+-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
++  backdrop-filter: blur(12px);
++  box-shadow: 0 10px 30px rgba(0, 44, 95, 0.03);
+ }
+ 
+-.stat-box {
++.bento-stat-card:hover {
++  transform: translateY(-8px);
++  background: #ffffff;
++  border-color: rgba(0, 162, 255, 0.3);
++  box-shadow: 0 20px 40px rgba(0, 44, 95, 0.08), inset 0 0 20px rgba(0, 162, 255, 0.05);
++}
++
++.bento-glow-bg {
++  position: absolute;
++  top: 0;
++  left: 0;
++  width: 100%;
++  height: 100%;
++  background: radial-gradient(circle at top right, rgba(0, 162, 255, 0.1) 0%, transparent 60%);
++  opacity: 0;
++  transition: opacity 0.5s ease;
++  pointer-events: none;
++}
++
++.bento-stat-card:hover .bento-glow-bg {
++  opacity: 1;
++}
++
++.bento-content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   text-align: center;
+-  flex: 1;
++  z-index: 2;
++  gap: 1rem;
+ }
+ 
+-.stat-box:not(:last-child) {
+-  border-right: 1px solid rgba(0, 0, 0, 0.1);
++.bento-icon-wrapper {
++  color: #ee3135;
++  background: rgba(238, 49, 53, 0.1);
++  padding: 1.2rem;
++  border-radius: 20px;
++  margin-bottom: 0.5rem;
++  transition: all 0.4s ease;
++  border: 1px solid rgba(238, 49, 53, 0.2);
+ }
+ 
+-.stat-icon {
+-  color: #002C5F;
+-  margin-bottom: 1.5rem;
+-  background: rgba(0, 44, 95, 0.1);
+-  padding: 1rem;
+-  border-radius: 50%;
++.bento-stat-card:hover .bento-icon-wrapper {
++  transform: scale(1.1) rotate(5deg);
++  background: rgba(238, 49, 53, 0.15);
++  color: #ee3135;
++  border-color: rgba(238, 49, 53, 0.3);
++  box-shadow: 0 0 20px rgba(238, 49, 53, 0.2);
+ }
+ 
+-.stat-value {
+-  font-size: 3.5rem;
++.bento-text-wrapper {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 0.3rem;
++}
++
++.bento-value {
++  font-size: 3.2rem;
+   font-weight: 900;
+-  color: #0f172a;
+-  letter-spacing: -2px;
+-  margin-bottom: 0.5rem;
++  color: #002C5F;
++  letter-spacing: -1.5px;
++  line-height: 1;
+ }
+ 
+-.stat-label {
++.bento-label {
+   font-size: 1.1rem;
+-  font-weight: 600;
++  font-weight: 700;
+   color: #64748b;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+ }
+ 
++@media (max-width: 1200px) {
++  .stats-bento-grid {
++    grid-template-columns: repeat(2, 1fr);
++  }
++}
++
++@media (max-width: 768px) {
++  .stats-bento-grid {
++    grid-template-columns: repeat(2, 1fr);
++    gap: 1rem;
++  }
++  .bento-stat-card {
++    padding: 1.5rem 1rem;
++  }
++  .bento-value {
++    font-size: 2rem;
++  }
++  .bento-label {
++    font-size: 0.85rem;
++  }
++  .bento-icon-wrapper {
++    padding: 0.8rem;
++  }
++  .legacy-section-wrapper {
++    padding: 2rem 0;
++  }
++}
++
++/* --- Ultra Premium Showrooms Section --- */
++.showrooms-section {
++  max-width: 1400px;
++  margin: 1.5rem auto;
++  padding: 0 2rem;
++  position: relative;
++}
++
++.showrooms-grid {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 1.5rem;
++}
++
++@media (max-width: 1200px) {
++  .showrooms-grid {
++    grid-template-columns: repeat(3, 1fr);
++  }
++}
++
+ @media (max-width: 992px) {
++  .showrooms-grid {
++    grid-template-columns: repeat(2, 1fr);
++  }
++}
++
++.modern-showroom-card {
++  position: relative;
++  background: rgba(255, 255, 255, 0.7);
++  backdrop-filter: blur(20px);
++  border-radius: 20px;
++  border: 1px solid rgba(255, 255, 255, 0.8);
++  padding: 1.5rem;
++  overflow: hidden;
++  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
++  box-shadow: 0 15px 35px rgba(0, 44, 95, 0.04);
++  cursor: pointer;
++  display: flex;
++  align-items: stretch;
++  z-index: 1;
++}
+ 
+-  .steps-container,
+-  .premium-services-grid {
++.modern-showroom-card:hover {
++  transform: translateY(-8px) scale(1.02);
++  box-shadow: 0 25px 50px rgba(0, 44, 95, 0.1);
++  background: #ffffff;
++}
++
++.modern-card-inner {
++  display: flex;
++  align-items: flex-start;
++  gap: 1.5rem;
++  width: 100%;
++  position: relative;
++  z-index: 2;
++}
++
++.modern-icon-box {
++  background: linear-gradient(135deg, #002C5F, #004080);
++  width: 50px;
++  height: 50px;
++  border-radius: 14px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  color: #ffffff;
++  flex-shrink: 0;
++  box-shadow: 0 8px 16px rgba(0, 44, 95, 0.2);
++  transition: transform 0.4s ease;
++}
++
++.modern-showroom-card:hover .modern-icon-box {
++  transform: rotateY(180deg);
++}
++.modern-showroom-card:hover .modern-pin {
++  transform: rotateY(-180deg);
++}
++
++.modern-card-details {
++  display: flex;
++  flex-direction: column;
++  flex-grow: 1;
++}
++
++.modern-city {
++  color: #0f172a;
++  font-size: 1.3rem;
++  font-weight: 800;
++  margin: 0 0 0.4rem 0;
++  letter-spacing: -0.5px;
++}
++
++.modern-address {
++  color: #475569;
++  font-size: 0.9rem;
++  line-height: 1.5;
++  margin: 0 0 1rem 0;
++  display: -webkit-box;
++  -webkit-line-clamp: 2;
++  -webkit-box-orient: vertical;
++  overflow: hidden;
++}
++
++.modern-contact {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  background: rgba(0, 44, 95, 0.05);
++  padding: 0.5rem 0.8rem;
++  border-radius: 50px;
++  color: #002C5F;
++  font-weight: 700;
++  font-size: 0.85rem;
++  margin-top: auto;
++  align-self: flex-start;
++  transition: background 0.3s ease;
++}
++
++.modern-showroom-card:hover .modern-contact {
++  background: rgba(0, 44, 95, 0.1);
++}
++
++.modern-card-glow {
++  position: absolute;
++  top: -50%;
++  left: -50%;
++  width: 200%;
++  height: 200%;
++  background: radial-gradient(circle, rgba(0, 44, 95, 0.03) 0%, transparent 70%);
++  opacity: 0;
++  transition: opacity 0.5s ease;
++  z-index: 1;
++  pointer-events: none;
++}
++
++.modern-showroom-card:hover .modern-card-glow {
++  opacity: 1;
++}
++
++/* Mobile specific styling for showrooms */
++@media (max-width: 768px) {
++  .showrooms-section .section-subtitle {
++    display: none;
++  }
++
++  .showrooms-section {
++    margin: 1rem auto;
++    padding: 0 1rem;
++  }
++  
++  .showrooms-grid {
+     grid-template-columns: 1fr;
++    gap: 1rem;
++  }
++
++  .modern-showroom-card {
++    padding: 1rem;
++    border-radius: 16px;
+   }
+ 
+-  .stats-container {
+-    flex-direction: column;
+-    gap: 3rem;
++  .modern-card-inner {
++    gap: 1rem;
++    align-items: center;
+   }
+ 
+-  .stat-box:not(:last-child) {
+-    border-right: none;
+-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+-    padding-bottom: 3rem;
++  .modern-icon-box {
++    width: 40px;
++    height: 40px;
++    border-radius: 10px;
++  }
++
++  .modern-pin {
++    width: 18px;
++    height: 18px;
++  }
++
++  .modern-city {
++    font-size: 1.1rem;
++    margin-bottom: 0.2rem;
++  }
++
++  .modern-address {
++    font-size: 0.8rem;
++    margin-bottom: 0.5rem;
++    -webkit-line-clamp: 1;
++  }
++
++  .modern-contact {
++    padding: 0.3rem 0.6rem;
++    font-size: 0.75rem;
+   }
+ }
+ 
+@@ -501,12 +703,13 @@
+   }
+ }
+ 
+-.hero-text-block {
+-  display: none;
+-  /* Hide the empty block causing the gap above the button */
+-}
+-
+-.hero-bottom-fade {
+-  display: none;
+-  /* Remove the fade effect to keep it clean */
++@media (max-width: 768px) {
++  .hero-bg-video {
++    width: 100%;
++    height: 100%;
++    top: 0;
++    left: 0;
++    border-radius: 0;
++    object-fit: cover;
++  }
+ }
+\ No newline at end of file
+diff --git a/README/src/pages/Home.jsx b/ui change/src/pages/Home.jsx
+index 7f93112..60bbf95 100644
+--- a/README/src/pages/Home.jsx
++++ b/ui change/src/pages/Home.jsx	
+@@ -1,6 +1,4 @@
+-import { Search } from 'lucide-react';
+ import { Activity } from 'lucide-react';
+-import { CheckCircle2 } from 'lucide-react';
+ import { Wrench } from 'lucide-react';
+ import { Landmark } from 'lucide-react';
+ import { Wind } from 'lucide-react';
+@@ -9,7 +7,7 @@ import { Star } from 'lucide-react';
+ import { ShieldCheck } from 'lucide-react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import ServiceTabs from '../components/ServiceTabs';
+-import { ArrowRight } from 'lucide-react';
++import { ArrowRight, MapPin, Phone, Trophy, Map, Users } from 'lucide-react';
+ 
+ import { useState } from 'react';
+ import './Home.css';
+@@ -19,23 +17,25 @@ const Home = () => {
+   const [plateNumber, setPlateNumber] = useState('');
+   const [showServiceTabs, setShowServiceTabs] = useState(false);
+ 
+-  const processSteps = [
+-    { step: '01', title: 'Enter Vehicle Details', desc: 'Simply enter your car registration number to get started.', icon: <Search size={28} /> },
+-    { step: '02', title: 'Unlock Digital Garage', desc: 'Instantly access RTO details, Challans, and PUC status.', icon: <Activity size={28} /> },
+-    { step: '03', title: 'Book Premium Service', desc: 'Choose a service package and let our experts handle the rest.', icon: <CheckCircle2 size={28} /> }
++  const hyundaiStats = [
++    { value: '26+', label: 'Years of Trust', icon: <Trophy size={32} /> },
++    { value: '11+', label: 'Showrooms', icon: <Map size={32} /> },
++    { value: '50k+', label: 'Happy Customers', icon: <Users size={32} /> },
++    { value: '100%', label: 'Genuine Parts', icon: <ShieldCheck size={32} /> }
+   ];
+ 
+-  const premiumServices = [
+-    { name: 'Periodic Maintenance', desc: 'Comprehensive servicing to keep your engine purring perfectly.', icon: <Wrench size={32} /> },
+-    { name: 'RTO & Legal', desc: 'Clear pending challans and check registration details easily.', icon: <Landmark size={32} /> },
+-    { name: 'Detailing & Spa', desc: 'Premium ceramic coating and deep interior cleaning.', icon: <Wind size={32} /> },
+-    { name: 'Diagnostics', desc: 'Advanced OBD2 scanning and complete health reports.', icon: <Activity size={32} /> }
+-  ];
+-
+-  const stats = [
+-    { value: '1M+', label: 'Vehicles Scanned', icon: <CarFront size={24} /> },
+-    { value: '50k+', label: 'Happy Customers', icon: <Star size={24} /> },
+-    { value: '100%', label: 'Genuine Spares', icon: <ShieldCheck size={24} /> }
++  const showroomLocations = [
++    { city: 'KOLHAPUR', address: 'OLD PUNE-BANGLORE HIGHWAY, OPP. HOTEL OPEL KOLHAPUR', phone: '9921301600 / 8888007766' },
++    { city: 'SANGLI', address: 'R. S. No. 292, Opposite Vasant Mangal karyalay Sangli-Kolhapur Road, Ankli, Sangli.', phone: '9168110505' },
++    { city: 'TASGAON', address: 'Tasgaon-Sangli Road, Opposite Ajantha Petrol Pump, Wasumbe', phone: '77200 18301' },
++    { city: 'KAVTHEMAHANKAL', address: 'Nagpur-Ratnagiri Highway, Borgaon', phone: '8010905157' },
++    { city: 'ISLAMPUR', address: 'Peth-Islampur Road, Near Laxmi Narayan Hospital', phone: '9168112626' },
++    { city: 'JAYSINGPUR', address: '149/2/2 Mahavir Auto Compound,Kolhapur - Sangli Hwy, Sambhajipur', phone: '7798886024' },
++    { city: 'ICHALKARNJI', address: 'Gate No. 854, Ichalkaranji Road, Kabanur.', phone: '8805848585' },
++    { city: 'RATNAGIRI', address: 'Mirjole M. I. D. C., Ratnagiri.', phone: '99229 49540' },
++    { city: 'CHIPLUN', address: 'A-41 MIDC Kherdi Karad Chiplun Highway Opp SBI bank Kherdi', phone: '88888 12502' },
++    { city: 'KUDAL', address: 'Kudal Udyamnagar, Mumbai-Goa Highway', phone: '8888812516' },
++    { city: 'KANKAVALI', address: 'Vrikshavalli Nursery Compound, Vagde', phone: '7410006037' }
+   ];
+ 
+   // Animation Variants
+@@ -102,8 +102,8 @@ const Home = () => {
+         </div>
+       </div>
+ 
+-      {/* How It Works Section */}
+-      <div className="how-it-works-section">
++      {/* Showrooms Section */}
++      <div className="showrooms-section">
+         <motion.div
+           className="section-header"
+           initial={{ opacity: 0, y: 20 }}
+@@ -111,25 +111,33 @@ const Home = () => {
+           viewport={{ once: true, margin: "-50px" }}
+           transition={{ duration: 0.6 }}
+         >
+-          <h2 className="section-title text-glow">How It Works</h2>
+-          <p className="section-subtitle">Experience the future of car maintenance in three simple steps.</p>
++          <h2 className="section-title text-glow">Mai Hyundai All Showroom</h2>
++          <p className="section-subtitle">Find your nearest Mai Hyundai authorized showroom and service center across Maharashtra.</p>
+         </motion.div>
+ 
+         <motion.div
+-          className="steps-container"
++          className="showrooms-grid"
+           variants={containerVariants}
+           initial="hidden"
+           whileInView="visible"
+           viewport={{ once: true, margin: "-50px" }}
+         >
+-          {processSteps.map((item, idx) => (
+-            <motion.div key={idx} variants={itemVariants} className="step-card">
+-              <div className="step-number">{item.step}</div>
+-              <div className="step-icon-wrapper">
+-                {item.icon}
++          {showroomLocations.map((location, i) => (
++            <motion.div key={i} variants={itemVariants} className="modern-showroom-card">
++              <div className="modern-card-inner">
++                <div className="modern-icon-box">
++                  <MapPin size={22} className="modern-pin" />
++                </div>
++                <div className="modern-card-details">
++                  <h3 className="modern-city">{location.city}</h3>
++                  <p className="modern-address">{location.address}</p>
++                  <div className="modern-contact">
++                    <Phone size={14} className="modern-phone-icon" />
++                    <span>{location.phone}</span>
++                  </div>
++                </div>
+               </div>
+-              <h3 className="step-title">{item.title}</h3>
+-              <p className="step-desc">{item.desc}</p>
++              <div className="modern-card-glow"></div>
+             </motion.div>
+           ))}
+         </motion.div>
+@@ -137,62 +145,44 @@ const Home = () => {
+ 
+       <div className="section-divider"></div>
+ 
+-      {/* Premium Services Grid */}
+-      <div className="services-overview-section">
+-        <motion.div
+-          className="section-header"
+-          initial={{ opacity: 0, y: 20 }}
+-          whileInView={{ opacity: 1, y: 0 }}
+-          viewport={{ once: true, margin: "-50px" }}
+-          transition={{ duration: 0.6 }}
+-        >
+-          <h2 className="section-title text-glow">Premium Services</h2>
+-          <p className="section-subtitle">From routine maintenance to advanced diagnostics, we've got you covered.</p>
+-        </motion.div>
+ 
+-        <motion.div
+-          className="premium-services-grid"
+-          variants={containerVariants}
+-          initial="hidden"
+-          whileInView="visible"
+-          viewport={{ once: true, margin: "-50px" }}
+-        >
+-          {premiumServices.map((service, i) => (
+-            <motion.div key={i} variants={itemVariants} className="service-highlight-card">
+-              <div className="service-card-glow"></div>
+-              <div className="service-icon-container">
+-                {service.icon}
+-              </div>
+-              <h3 className="service-name">{service.name}</h3>
+-              <p className="service-detail">{service.desc}</p>
+-              <div className="service-explore">
+-                <span>Explore</span>
+-                <ArrowRight size={18} />
+-              </div>
+-            </motion.div>
+-          ))}
+-        </motion.div>
+-      </div>
+-
+-      <div className="section-divider"></div>
++      {/* Mai Hyundai Legacy Section */}
++      <div className="legacy-section-wrapper">
++        <div className="trust-stats-section dark-mode-stats">
++          <motion.div
++            className="section-header dark-header"
++            initial={{ opacity: 0, y: 20 }}
++            whileInView={{ opacity: 1, y: 0 }}
++            viewport={{ once: true, margin: "-50px" }}
++            transition={{ duration: 0.6 }}
++          >
++            <h2 className="section-title text-glow-dark">The Mai Hyundai Legacy</h2>
++            <p className="section-subtitle dark-subtitle">26 years of excellence, trust, and unmatched service across Maharashtra.</p>
++          </motion.div>
+ 
+-      {/* Trust & Stats Section */}
+-      <div className="trust-stats-section">
+-        <motion.div
+-          className="stats-container"
+-          variants={containerVariants}
+-          initial="hidden"
+-          whileInView="visible"
+-          viewport={{ once: true, margin: "-50px" }}
+-        >
+-          {stats.map((stat, idx) => (
+-            <motion.div key={idx} variants={itemVariants} className="stat-box">
+-              <div className="stat-icon">{stat.icon}</div>
+-              <div className="stat-value">{stat.value}</div>
+-              <div className="stat-label">{stat.label}</div>
+-            </motion.div>
+-          ))}
+-        </motion.div>
++          <motion.div
++            className="stats-bento-grid"
++            variants={containerVariants}
++            initial="hidden"
++            whileInView="visible"
++            viewport={{ once: true, margin: "-50px" }}
++          >
++            {hyundaiStats.map((stat, idx) => (
++              <motion.div key={idx} variants={itemVariants} className="bento-stat-card">
++                <div className="bento-glow-bg"></div>
++                <div className="bento-content">
++                  <div className="bento-icon-wrapper">
++                    {stat.icon}
++                  </div>
++                  <div className="bento-text-wrapper">
++                    <div className="bento-value">{stat.value}</div>
++                    <div className="bento-label">{stat.label}</div>
++                  </div>
++                </div>
++              </motion.div>
++            ))}
++          </motion.div>
++        </div>
+       </div>
+ 
+     </div>
+diff --git a/README/src/pages/Login.jsx b/ui change/src/pages/Login.jsx
+index 87a0332..c07d2b9 100644
+--- a/README/src/pages/Login.jsx
++++ b/ui change/src/pages/Login.jsx	
+@@ -4,7 +4,6 @@ import { ArrowRight } from 'lucide-react';
+ 
+ import { useState, useEffect } from 'react';
+ import { useNavigate } from 'react-router-dom';
+-import api from '../api/axiosConfig';
+ import './Login.css';
+ 
+ const Login = () => {
+@@ -47,10 +46,15 @@ const Login = () => {
+         }
+       }
+ 
+-      const response = await api.post('/login', { email, password });
+-      const data = response.data;
++      const response = await fetch('http://localhost:5000/api/login', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ email, password })
++      });
+ 
+-      if (data.success) {
++      const data = await response.json();
++
++      if (response.ok && data.success) {
+         localStorage.setItem('adminAuth', 'true');
+         localStorage.setItem('userRole', data.role);
+         if (data.role === 'MANAGER' || data.role === 'Manager' || data.role === 'Sub Admin') {
+@@ -62,7 +66,7 @@ const Login = () => {
+         setError(data.message || 'Invalid email or password');
+       }
+     } catch (err) {
+-      setError(err.response?.data?.message || 'Failed to connect to the server');
++      setError('Failed to connect to the server');
+     }
+   };
+ 
+@@ -70,10 +74,10 @@ const Login = () => {
+     e.preventDefault();
+     setError('');
+     // Store the newly registered user in local storage
+-    localStorage.setItem('registeredUser', JSON.stringify({
+-      email: email.trim().toLowerCase(),
+-      password: password.trim(),
+-      name: name.trim()
++    localStorage.setItem('registeredUser', JSON.stringify({ 
++      email: email.trim().toLowerCase(), 
++      password: password.trim(), 
++      name: name.trim() 
+     }));
+     setSuccessMsg('Account created successfully! Please sign in.');
+     setTimeout(() => {
+@@ -98,10 +102,15 @@ const Login = () => {
+ 
+     try {
+       // 1. Try real backend API first
+-      const response = await api.post('/forgot-password', { email: cleanEmail });
+-      const data = response.data;
+-
+-      if (data.success) {
++      const response = await fetch('http://localhost:5000/api/forgot-password', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ email: cleanEmail })
++      });
++      
++      const data = await response.json();
++
++      if (response.ok && data.success) {
+         setSuccessMsg(`Reset link sent! (Demo: ${data.previewUrl})`);
+         setTimeout(() => {
+           setView('login');
+@@ -111,8 +120,8 @@ const Login = () => {
+         return;
+       }
+ 
+-    } catch (err) {
+-      if (err.response && err.response.status === 404) {
++      // 2. Fallback to local storage for mock signup users if API returns 404
++      if (response.status === 404) {
+         const registeredUserStr = localStorage.getItem('registeredUser');
+         if (registeredUserStr) {
+           const registeredUser = JSON.parse(registeredUserStr);
+@@ -120,7 +129,7 @@ const Login = () => {
+             const tempPassword = Math.random().toString(36).slice(-6);
+             registeredUser.password = tempPassword;
+             localStorage.setItem('registeredUser', JSON.stringify(registeredUser));
+-
++            
+             setSuccessMsg(`Local mock user reset! Temp password: ${tempPassword}`);
+             setTimeout(() => {
+               setView('login');
+@@ -131,7 +140,11 @@ const Login = () => {
+           }
+         }
+       }
+-      setError(err.response?.data?.message || 'Failed to connect to the server');
++      
++      setError(data.message || 'Account with this email was not found.');
++      
++    } catch (err) {
++      setError('Failed to connect to the server');
+     }
+   };
+ 
+@@ -200,8 +213,8 @@ const Login = () => {
+                 required
+               />
+               <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+-                <span
+-                  onClick={() => { setView('forgot'); setError(''); setSuccessMsg(''); }}
++                <span 
++                  onClick={() => { setView('forgot'); setError(''); setSuccessMsg(''); }} 
+                   style={{ color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer', fontWeight: '500' }}
+                 >
+                   Forgot Password?
+@@ -212,7 +225,7 @@ const Login = () => {
+             <button type="submit" className="premium-submit-btn">
+               Sign In <ArrowRight size={18} />
+             </button>
+-
++            
+             <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#64748b' }}>
+               Don't have an account? <span onClick={() => { setView('signup'); setError(''); setSuccessMsg(''); }} style={{ color: '#2563eb', cursor: 'pointer', fontWeight: '600' }}>Sign Up</span>
+             </div>
+diff --git a/README/src/pages/MyGarage.jsx b/ui change/src/pages/MyGarage.jsx
+index 2192b19..07faafb 100644
+--- a/README/src/pages/MyGarage.jsx
++++ b/ui change/src/pages/MyGarage.jsx	
+@@ -5,7 +5,6 @@ import { Trash2 } from 'lucide-react';
+ 
+ import { useState, useEffect } from 'react';
+ import { useNavigate } from 'react-router-dom';
+-import api from '../api/axiosConfig';
+ import '../components/ServiceTabs.css';
+ 
+ const MyGarage = () => {
+@@ -28,8 +27,12 @@ const MyGarage = () => {
+     setIsLoading(true);
+     try {
+       const cleanRegNumber = car.reg.replace(/-/g, "");
+-      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+-      const data = response.data;
++      const response = await fetch(`http://localhost:5000/api/vehicle/${cleanRegNumber}`);
++      const data = await response.json();
++
++      if (!response.ok) {
++        throw new Error(data.message);
++      }
+ 
+       const vehicle = data.data.rc_details;
+ 
+diff --git a/README/src/pages/admin/Dashboard.jsx b/ui change/src/pages/admin/Dashboard.jsx
+index 112ca26..577000d 100644
+--- a/README/src/pages/admin/Dashboard.jsx
++++ b/ui change/src/pages/admin/Dashboard.jsx	
+@@ -3,7 +3,6 @@ import RevenueChart from '../../components/dashboard/RevenueChart';
+ import CategoryChart from '../../components/dashboard/CategoryChart';
+ import Table from '../../components/ui/Table';
+ import Modal from '../../components/ui/Modal';
+-import api from '../../api/axiosConfig';
+ 
+ import { useState, useEffect } from "react";
+ import { useNavigate } from "react-router-dom";
+@@ -44,8 +43,8 @@ export default function Dashboard() {
+ 
+   useEffect(() => {
+     Promise.all([
+-      api.get("/dashboard/stats").then(res => res.data),
+-      api.get("/dashboard/recent").then(res => res.data)
++      fetch("http://localhost:5000/api/dashboard/stats").then(res => res.json()),
++      fetch("http://localhost:5000/api/dashboard/recent").then(res => res.json())
+     ])
+       .then(([statsRes, recentRes]) => {
+         setStatsData(statsRes);
+@@ -68,8 +67,8 @@ export default function Dashboard() {
+     } else if (action === 'delete') {
+       if (window.confirm("Are you sure you want to delete this booking?")) {
+         try {
+-          const res = await api.delete(`/bookings/${row.id}`);
+-          if (res.status === 200) {
++          const res = await fetch(`http://localhost:5000/api/bookings/${row.id}`, { method: 'DELETE' });
++          if (res.ok) {
+             setRecentBookings(recentBookings.filter(b => b.id !== row.id));
+           }
+         } catch (err) {
+@@ -81,8 +80,12 @@ export default function Dashboard() {
+   const handleEditSubmit = async (e) => {
+     e.preventDefault();
+     try {
+-      const res = await api.put(`/bookings/${editingId}`, { status: statusForm });
+-      if (res.status === 200) {
++      const res = await fetch(`http://localhost:5000/api/bookings/${editingId}/status`, {
++        method: 'PUT',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ status: statusForm })
++      });
++      if (res.ok) {
+         setRecentBookings(recentBookings.map(b => b.id === editingId ? { ...b, status: statusForm } : b));
+         setIsEditModalOpen(false);
+       }
+diff --git a/ui change/src/pages/admin/Enquiries.jsx b/ui change/src/pages/admin/Enquiries.jsx
+new file mode 100644
+index 0000000..19d96b9
+--- /dev/null
++++ b/ui change/src/pages/admin/Enquiries.jsx	
+@@ -0,0 +1,128 @@
++import { useState, useEffect } from "react";
++import { MessageSquare, Mail, Phone, Calendar, Reply } from "lucide-react";
++import Modal from "../../components/ui/Modal";
++
++export default function Enquiries() {
++  const [enquiries, setEnquiries] = useState([]);
++  const [loading, setLoading] = useState(true);
++
++  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
++  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
++  const [replyMessage, setReplyMessage] = useState("");
++
++  useEffect(() => {
++    fetch("http://localhost:5000/api/enquiries")
++      .then((res) => res.json())
++      .then((data) => {
++        setEnquiries(data);
++        setLoading(false);
++      })
++      .catch((err) => {
++        console.error("Failed to fetch enquiries:", err);
++        setLoading(false);
++      });
++  }, []);
++
++  const openReplyModal = (enq) => {
++    setSelectedEnquiry(enq);
++    setReplyMessage("");
++    setIsReplyModalOpen(true);
++  };
++
++  const handleSendReply = () => {
++    // Mock sending reply
++    setEnquiries(enquiries.map(e => 
++      e.id === selectedEnquiry.id ? { ...e, status: "Resolved" } : e
++    ));
++    setIsReplyModalOpen(false);
++  };
++
++  return (
++    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
++      <div>
++        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Contact Enquiries</h1>
++        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">View and respond to customer questions and messages.</p>
++      </div>
++
++      <div className="grid grid-cols-1 gap-6">
++        {loading ? (
++          <p className="text-slate-500">Loading enquiries...</p>
++        ) : enquiries.length === 0 ? (
++          <p className="text-slate-500">No enquiries found.</p>
++        ) : (
++          enquiries.map((enq) => (
++            <div key={enq.id} className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
++              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
++                <div className="flex items-start gap-4">
++                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
++                    <MessageSquare className="w-5 h-5" />
++                  </div>
++                  <div>
++                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{enq.subject}</h3>
++                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-0.5">{enq.name}</p>
++                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-2">
++                      <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {enq.email}</span>
++                      <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {enq.phone}</span>
++                      <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {enq.date}</span>
++                    </div>
++                  </div>
++                </div>
++                <div className={`px-2.5 py-1 rounded-full text-xs font-medium border ${enq.status === 'New' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
++                  {enq.status}
++                </div>
++              </div>
++              
++              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg text-sm text-slate-700 dark:text-slate-300 leading-relaxed border border-slate-100 dark:border-slate-700/50">
++                "{enq.message}"
++              </div>
++              
++              <div className="mt-4 flex justify-end">
++                <button 
++                  onClick={() => openReplyModal(enq)}
++                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
++                >
++                  <Reply className="w-4 h-4" /> Reply
++                </button>
++              </div>
++            </div>
++          ))
++        )}
++      </div>
++
++      {/* Reply Modal */}
++      <Modal isOpen={isReplyModalOpen} onClose={() => setIsReplyModalOpen(false)} title="Reply to Enquiry">
++        {selectedEnquiry && (
++          <div className="space-y-4">
++            <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
++              <p className="text-sm font-medium text-slate-900 dark:text-white">To: {selectedEnquiry.name} ({selectedEnquiry.email})</p>
++              <p className="text-sm text-slate-500 mt-1">Re: {selectedEnquiry.subject}</p>
++            </div>
++            
++            <div>
++              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Your Message</label>
++              <textarea 
++                rows={5}
++                value={replyMessage}
++                onChange={(e) => setReplyMessage(e.target.value)}
++                placeholder="Type your reply here..."
++                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white"
++              ></textarea>
++            </div>
++
++            <div className="pt-4 flex justify-end gap-3">
++              <button onClick={() => setIsReplyModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg">Cancel</button>
++              <button 
++                onClick={handleSendReply}
++                disabled={!replyMessage.trim()} 
++                className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
++              >
++                <Reply className="w-4 h-4" /> Send Reply
++              </button>
++            </div>
++          </div>
++        )}
++      </Modal>
++
++    </div>
++  );
++}
+diff --git a/ui change/src/pages/admin/Mechanics.jsx b/ui change/src/pages/admin/Mechanics.jsx
+new file mode 100644
+index 0000000..d612956
+--- /dev/null
++++ b/ui change/src/pages/admin/Mechanics.jsx	
+@@ -0,0 +1,70 @@
++import { useState, useEffect } from "react";
++import { UserCog, Car, Mail, Phone } from "lucide-react";
++
++export default function Mechanics() {
++  const [mechanics, setMechanics] = useState([]);
++  const [loading, setLoading] = useState(true);
++
++  useEffect(() => {
++    fetch("http://localhost:5000/api/mechanics")
++      .then((res) => res.json())
++      .then((data) => {
++        // Mock data if no mechanics are found
++        if (data.length === 0) {
++          setMechanics([
++            { id: 1, name: "Ravi Kumar", email: "ravi@example.com", phone_number: "9988776655", active_jobs: 2, current_vehicle: "MH-12-AB-1234 (Honda City)" },
++            { id: 2, name: "Suresh Menon", email: "suresh@example.com", phone_number: "8877665544", active_jobs: 0, current_vehicle: "Available" }
++          ]);
++        } else {
++          setMechanics(data);
++        }
++        setLoading(false);
++      })
++      .catch((err) => {
++        console.error("Failed to fetch mechanics:", err);
++        setLoading(false);
++      });
++  }, []);
++
++  return (
++    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
++      <div>
++        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mechanics</h1>
++        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage mechanics and their assigned vehicles.</p>
++      </div>
++
++      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
++        {loading ? (
++          <p className="text-slate-500">Loading mechanics...</p>
++        ) : (
++          mechanics.map((mech) => (
++            <div key={mech.id} className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
++              <div className="flex items-center gap-4">
++                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
++                  <UserCog className="w-6 h-6" />
++                </div>
++                <div>
++                  <h3 className="font-bold text-slate-900 dark:text-white">{mech.name}</h3>
++                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
++                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {mech.email}</span>
++                  </div>
++                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
++                    <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {mech.phone_number}</span>
++                  </div>
++                </div>
++              </div>
++
++              <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
++                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Current Assigned Vehicle</p>
++                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
++                  <Car className="w-4 h-4 text-primary" />
++                  {mech.current_vehicle || "None Assigned"}
++                </div>
++              </div>
++            </div>
++          ))
++        )}
++      </div>
++    </div>
++  );
++}
+diff --git a/ui change/src/pages/admin/Vehicles.jsx b/ui change/src/pages/admin/Vehicles.jsx
+new file mode 100644
+index 0000000..30889a7
+--- /dev/null
++++ b/ui change/src/pages/admin/Vehicles.jsx	
+@@ -0,0 +1,358 @@
++import { useState, useEffect } from "react";
++import Table from "../../components/ui/Table";
++import Modal from "../../components/ui/Modal";
++
++const columns = [
++  { header: "ID", accessor: "id", cell: (row, idx) => <span className="font-semibold text-slate-900 dark:text-white">{idx + 1}</span> },
++  { header: "Registration", accessor: "number", cell: (row) => <span className="font-bold text-slate-900 dark:text-white uppercase px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">{row.number}</span> },
++  { header: "Brand", accessor: "brand" },
++  { header: "Model", accessor: "model", cell: (row) => <span className="font-medium text-slate-800 dark:text-slate-200">{row.model}</span> },
++  { header: "Year", accessor: "year" },
++  { header: "Fuel", accessor: "fuel" },
++  { header: "Owner", accessor: "owner" },
++];
++
++export default function Vehicles() {
++  const [vehicles, setVehicles] = useState([]);
++  const [customers, setCustomers] = useState([]);
++  const [loading, setLoading] = useState(true);
++
++  // Modal State
++  const [isModalOpen, setIsModalOpen] = useState(false);
++  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
++  const [selectedVehicle, setSelectedVehicle] = useState(null);
++  const [editingId, setEditingId] = useState(null);
++  const [formData, setFormData] = useState({ customer_id: "", registration_number: "", brand: "", model: "", year: "", fuel_type: "Petrol" });
++  const [submitting, setSubmitting] = useState(false);
++
++  const fetchVehicles = () => {
++    setLoading(true);
++    fetch("http://localhost:5000/api/vehicles")
++      .then(res => res.json())
++      .then(data => {
++        if (Array.isArray(data)) setVehicles(data);
++        else setVehicles([]);
++        setLoading(false);
++      })
++      .catch(err => {
++        console.error("Error fetching vehicles:", err);
++        setVehicles([]);
++        setLoading(false);
++      });
++  };
++
++  const fetchCustomers = () => {
++    fetch("http://localhost:5000/api/customers")
++      .then(res => res.json())
++      .then(data => {
++        if (Array.isArray(data)) setCustomers(data);
++      })
++      .catch(err => console.error("Error fetching customers:", err));
++  };
++
++  useEffect(() => {
++    fetchVehicles();
++    fetchCustomers();
++  }, []);
++
++  const handleAction = (action, row) => {
++    if (action === 'view') {
++      setSelectedVehicle(row);
++      setIsViewModalOpen(true);
++    } else if (action === 'edit') {
++      setEditingId(row.id);
++      setFormData({
++        customer_id: customers.find(c => c.name === row.owner)?.id || "",
++        registration_number: row.number || "",
++        brand: row.brand || "",
++        model: row.model || "",
++        year: row.year || "",
++        fuel_type: row.fuel || "Petrol"
++      });
++      setIsModalOpen(true);
++    } else if (action === 'delete') {
++      setVehicles(vehicles.filter(v => v.id !== row.id));
++    }
++  };
++
++  const openAddModal = () => {
++    setEditingId(null);
++    setFormData({ customer_id: "", registration_number: "", brand: "", model: "", year: "", fuel_type: "Petrol" });
++    setIsModalOpen(true);
++  };
++
++  const handleSubmit = async (e) => {
++    e.preventDefault();
++    setSubmitting(true);
++
++    if (editingId) {
++      setVehicles(vehicles.map(v => v.id === editingId ? {
++        ...v,
++        owner: customers.find(c => c.id == formData.customer_id)?.name || v.owner,
++        number: formData.registration_number,
++        brand: formData.brand,
++        model: formData.model,
++        year: formData.year,
++        fuel: formData.fuel_type
++      } : v));
++      setIsModalOpen(false);
++      setSubmitting(false);
++      return;
++    }
++
++    try {
++      const res = await fetch("http://localhost:5000/api/vehicles", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify(formData)
++      });
++      if (res.ok) {
++        setIsModalOpen(false);
++        setFormData({ customer_id: "", registration_number: "", brand: "", model: "", year: "", fuel_type: "Petrol" });
++        fetchVehicles();
++      }
++    } catch (err) {
++      console.error(err);
++    } finally {
++      setSubmitting(false);
++    }
++  };
++
++  return (
++    <div className="space-y-6">
++      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
++        <div>
++          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Vehicles</h1>
++          <p className="text-slate-500 dark:text-slate-400">Manage registered vehicles.</p>
++        </div>
++        <button onClick={openAddModal} className="btn-primary">Add Vehicle</button>
++      </div>
++
++      <div className="card p-0 overflow-hidden border-none shadow-sm bg-transparent dark:bg-transparent">
++        <div className="p-4 bg-surface-light dark:bg-surface-dark border border-b-0 border-slate-200 dark:border-slate-800 rounded-t-lg flex gap-4">
++          <input type="text" placeholder="Search vehicles..." className="input-field max-w-sm" />
++          <select className="input-field max-w-[150px]">
++            <option value="">All Brands</option>
++          </select>
++        </div>
++        {loading ? (
++          <div className="h-64 flex items-center justify-center text-slate-500">Loading vehicles...</div>
++        ) : (
++          <Table
++            columns={columns}
++            data={vehicles}
++            actions={['view', 'edit', 'delete']}
++            onAction={handleAction}
++          />
++        )}
++      </div>
++
++      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? "Edit Vehicle" : "Add New Vehicle"}>
++        <form onSubmit={handleSubmit} className="space-y-4">
++          <div className="space-y-1">
++            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Owner (Customer)</label>
++            <select required className="input-field" value={formData.customer_id} onChange={e => setFormData({ ...formData, customer_id: e.target.value })}>
++              <option value="" disabled>Select a customer</option>
++              {customers.map(c => (
++                <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
++              ))}
++            </select>
++          </div>
++
++          <div className="space-y-1">
++            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Registration Number</label>
++            <input required type="text" placeholder="e.g. MH-01-AB-1234" className="input-field uppercase" value={formData.registration_number} onChange={e => setFormData({ ...formData, registration_number: e.target.value })} />
++          </div>
++
++          <div className="grid grid-cols-2 gap-4">
++            <div className="space-y-1">
++              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Brand</label>
++              <input required type="text" className="input-field" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} />
++            </div>
++            <div className="space-y-1">
++              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Model</label>
++              <input required type="text" className="input-field" value={formData.model} onChange={e => setFormData({ ...formData, model: e.target.value })} />
++            </div>
++          </div>
++
++          <div className="grid grid-cols-2 gap-4">
++            <div className="space-y-1">
++              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Year</label>
++              <input required type="number" min="1990" max={new Date().getFullYear()} className="input-field" value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} />
++            </div>
++            <div className="space-y-1">
++              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fuel Type</label>
++              <select required className="input-field" value={formData.fuel_type} onChange={e => setFormData({ ...formData, fuel_type: e.target.value })}>
++                <option value="Petrol">Petrol</option>
++                <option value="Diesel">Diesel</option>
++                <option value="EV">EV</option>
++                <option value="CNG">CNG</option>
++              </select>
++            </div>
++          </div>
++
++          <div className="pt-4 flex justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
++            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Cancel</button>
++            <button type="submit" disabled={submitting} className="btn-primary">{submitting ? "Saving..." : (editingId ? "Save Changes" : "Save Vehicle")}</button>
++          </div>
++        </form>
++      </Modal>
++
++      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Vehicle Details">
++        {selectedVehicle && (
++          <div className="space-y-4">
++            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg space-y-3">
++              <div className="flex justify-between">
++                <span className="text-slate-500 text-sm">Vehicle ID</span>
++                <span className="font-medium text-slate-900 dark:text-white">#{selectedVehicle.id}</span>
++              </div>
++              <div className="flex justify-between">
++                <span className="text-slate-500 text-sm">Registration</span>
++                <span className="font-bold text-slate-900 dark:text-white uppercase">{selectedVehicle.number}</span>
++              </div>
++              <div className="flex justify-between">
++                <span className="text-slate-500 text-sm">Brand & Model</span>
++                <span className="font-medium text-slate-900 dark:text-white">{selectedVehicle.brand} {selectedVehicle.model}</span>
++              </div>
++              <div className="flex justify-between">
++                <span className="text-slate-500 text-sm">Year & Fuel</span>
++                <span className="font-medium text-slate-900 dark:text-white">{selectedVehicle.year} - {selectedVehicle.fuel}</span>
++              </div>
++              <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
++                <span className="text-slate-500 text-sm">Owner</span>
++                <span className="font-medium text-slate-900 dark:text-white">{selectedVehicle.owner}</span>
++              </div>
++            </div>
++            <div className="pt-2 flex justify-end">
++              <button onClick={() => setIsViewModalOpen(false)} className="btn-primary">Close</button>
++            </div>
++          </div>
++        )}
++      </Modal>
++    </div>
++  );
++}
++  };
++
++const closeModal = () => {
++  setIsModalOpen(false);
++  setEditingId(null);
++};
++
++if (isLoading) return <div className="p-8 text-center text-gray-500">Loading Vehicles...</div>;
++if (isError) return <div className="p-8 text-center text-red-500">Failed to load Vehicles.</div>;
++
++const vehicles = data?.data || [];
++const customers = customersData?.data || [];
++
++return (
++  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
++    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
++      <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Vehicle Directory</h2>
++      <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
++        + Add Vehicle
++      </button>
++    </div>
++
++    <div className="overflow-x-auto">
++      <table className="w-full text-left border-collapse">
++        <thead>
++          <tr className="bg-gray-50 dark:bg-gray-900/50">
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Reg No.</th>
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Vehicle</th>
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Customer</th>
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Fuel/Year</th>
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Added On</th>
++            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">Actions</th>
++          </tr>
++        </thead>
++        <tbody>
++          {vehicles.length === 0 ? (
++            <tr>
++              <td colSpan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
++                No vehicles registered yet.
++              </td>
++            </tr>
++          ) : (
++            vehicles.map((vehicle) => (
++              <tr key={vehicle.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
++                <td className="p-4 text-sm font-bold text-gray-900 dark:text-white uppercase">
++                  {vehicle.vehicleNumber}
++                </td>
++                <td className="p-4 text-sm text-gray-900 dark:text-white">
++                  {vehicle.brand} {vehicle.model}
++                </td>
++                <td className="p-4 text-sm text-gray-600 dark:text-gray-300">
++                  {vehicle.customer?.name} <br />
++                  <span className="text-xs text-gray-400">{vehicle.customer?.mobile}</span>
++                </td>
++                <td className="p-4 text-sm text-gray-600 dark:text-gray-300">
++                  {vehicle.fuelType || 'N/A'} <br />
++                  <span className="text-xs text-gray-400">{vehicle.year || 'N/A'}</span>
++                </td>
++                <td className="p-4 text-sm text-gray-600 dark:text-gray-300">
++                  {new Date(vehicle.createdAt).toLocaleDateString()}
++                </td>
++                <td className="p-4 text-sm">
++                  <button onClick={() => openEditModal(vehicle)} className="text-blue-600 hover:text-blue-800 font-medium mr-3">Edit</button>
++                </td>
++              </tr>
++            ))
++          )}
++        </tbody>
++      </table>
++    </div>
++
++    <Modal isOpen={isModalOpen} onClose={closeModal} title={editingId ? "Edit Vehicle" : "Add New Vehicle"}>
++      <form onSubmit={handleSubmit} className="space-y-4">
++        <div>
++          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
++          <select required name="customerId" value={formData.customerId} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
++            <option value="">Select Customer</option>
++            {customers.map(c => (
++              <option key={c.id} value={c.id}>{c.name} ({c.mobile})</option>
++            ))}
++          </select>
++        </div>
++
++        <div className="grid grid-cols-2 gap-4">
++          <div>
++            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Registration Number</label>
++            <input required type="text" name="vehicleNumber" value={formData.vehicleNumber} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white uppercase" placeholder="MH-12-AB-1234" />
++          </div>
++          <div>
++            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
++            <input required type="text" name="brand" value={formData.brand} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
++          </div>
++          <div>
++            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
++            <input required type="text" name="model" value={formData.model} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
++          </div>
++          <div>
++            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fuel Type</label>
++            <select name="fuelType" value={formData.fuelType} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
++              <option value="Petrol">Petrol</option>
++              <option value="Diesel">Diesel</option>
++              <option value="CNG">CNG</option>
++              <option value="Electric">Electric</option>
++            </select>
++          </div>
++          <div>
++            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Manufacturing Year</label>
++            <input required type="number" name="year" value={formData.year} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
++          </div>
++        </div>
++
++        <div className="flex justify-end space-x-3 pt-4 border-t dark:border-gray-700">
++          <button type="button" onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
++          <button type="submit" disabled={mutation.isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">
++            {mutation.isPending ? 'Saving...' : 'Save Vehicle'}
++          </button>
++        </div>
++      </form>
++    </Modal>
++  </div>
++);
++};
++
++export default Vehicles;

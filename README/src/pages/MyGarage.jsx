@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
+import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import '../components/ServiceTabs.css';
 
@@ -27,12 +28,10 @@ const MyGarage = () => {
     setIsLoading(true);
     try {
       const cleanRegNumber = car.reg.replace(/-/g, "");
-      const response = await fetch(`http://localhost:5000/api/vehicle/${cleanRegNumber}`);
-      const data = await response.json();
+      const response = await api.get(`/vehicle/${cleanRegNumber}`);
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
+      // Axios throws on !ok, handled in catch
 
       const vehicle = data.data.rc_details;
 
