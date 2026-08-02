@@ -1104,6 +1104,11 @@ const BatteryServiceSelection = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="bss-pkg-box">
+                  {selectedPopupService.image_url && (
+                    <div className="bss-pkg-img">
+                      <img src={selectedPopupService.image_url} alt={selectedPopupService.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  )}
                   <div className="bss-pkg-content">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{selectedPopupService.title}</h3>

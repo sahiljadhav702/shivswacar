@@ -18,8 +18,9 @@ const Services = () => {
   const [isPkgModalOpen, setIsPkgModalOpen] = useState(false);
   const [editingPkgId, setEditingPkgId] = useState(null);
   const [pkgFormData, setPkgFormData] = useState({
-    title: '', description: '', price: '', icon_type: 'Wrench'
+    title: '', description: '', price: '', icon_type: 'Wrench', image_url: ''
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const availableIntervals = [1500, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000];
 
@@ -75,9 +76,32 @@ const Services = () => {
     setEditingPkgId(pkg.id);
     setPkgFormData({
       title: pkg.title || '', description: pkg.description || '', price: pkg.price || '',
-      icon_type: pkg.icon_type || 'Wrench'
+      icon_type: pkg.icon_type || 'Wrench', image_url: pkg.image_url || ''
     });
     setIsPkgModalOpen(true);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('http://localhost:3000/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.url) {
+        setPkgFormData(prev => ({ ...prev, image_url: data.url }));
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const parts = partsData?.data || [];
@@ -194,6 +218,15 @@ const Services = () => {
                   <option value="Settings">Settings / Suspension</option>
                 </select>
               </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Upload Image (Optional)</label>
+              <div className="flex gap-2 items-center">
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="input-field py-1 w-full text-sm" disabled={uploadingImage} />
+                {uploadingImage && <span className="text-xs text-primary animate-pulse">Uploading...</span>}
+              </div>
+              {pkgFormData.image_url && <img src={pkgFormData.image_url} alt="Preview" className="mt-2 h-20 rounded object-cover border border-slate-200" />}
             </div>
             
             <div className="flex justify-end space-x-3 pt-6 mt-4 border-t"><button type="button" onClick={() => setIsPkgModalOpen(false)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button><button type="submit" disabled={pkgMutation.isPending} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg">{pkgMutation.isPending ? 'Saving...' : 'Save Package'}</button></div>
