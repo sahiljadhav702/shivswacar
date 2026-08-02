@@ -106,11 +106,12 @@ const Services = () => {
     const formData = new FormData();
     formData.append('image', file);
     try {
-      const res = await fetch('http://localhost:3000/api/upload', {
-        method: 'POST',
-        body: formData
+      const res = await api.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      const data = await res.json();
+      const data = res.data;
       if (data.url) {
         setPkgFormData(prev => ({ ...prev, image_url: data.url }));
       }
