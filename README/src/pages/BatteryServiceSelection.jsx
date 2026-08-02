@@ -927,38 +927,54 @@ const BatteryServiceSelection = () => {
             >
 
 
-              <motion.div
-                style={styles.servicesGrid}
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="bss-services-grid"
-              >
-                {packages.map((service, idx) => {
-                  const isSelected = selectedAddons.some(a => a.id === service.id);
-                  return (
+              <div>
+                {/* Grouping Packages by Category */}
+                {Object.entries(
+                  packages.reduce((acc, pkg) => {
+                    const cat = pkg.category_heading || 'Regular Services';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(pkg);
+                    return acc;
+                  }, {})
+                ).map(([heading, groupPackages]) => (
+                  <div key={heading} style={{ marginBottom: '32px' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937', borderBottom: '2px solid #e5e7eb', paddingBottom: '8px' }}>
+                      {heading}
+                    </h2>
                     <motion.div
-                      key={service.id}
-                      style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
-                      variants={fadeInUp}
-                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                      onClick={() => setSelectedPopupService(service)}
-                      className="bss-service-card"
+                      style={styles.servicesGrid}
+                      variants={staggerContainer}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      className="bss-services-grid"
                     >
-                      <div style={styles.serviceIconWrapper}>
-                        <div style={styles.serviceIcon}>{service.icon}</div>
-                        {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
-                      </div>
-                      <div style={styles.serviceInfo}>
-                        <div style={styles.serviceTitle}>{service.title}</div>
-                        <div style={styles.serviceDesc}>{service.desc}</div>
-                      </div>
-
+                      {groupPackages.map((service, idx) => {
+                        const isSelected = selectedAddons.some(a => a.id === service.id);
+                        return (
+                          <motion.div
+                            key={service.id}
+                            style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
+                            variants={fadeInUp}
+                            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                            onClick={() => setSelectedPopupService(service)}
+                            className="bss-service-card"
+                          >
+                            <div style={styles.serviceIconWrapper}>
+                              <div style={styles.serviceIcon}>{service.icon}</div>
+                              {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
+                            </div>
+                            <div style={styles.serviceInfo}>
+                              <div style={styles.serviceTitle}>{service.title}</div>
+                              <div style={styles.serviceDesc}>{service.desc}</div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
-                  );
-                })}
-              </motion.div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           )}
         </div>

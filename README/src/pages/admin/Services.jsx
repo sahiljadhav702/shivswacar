@@ -18,7 +18,7 @@ const Services = () => {
   const [isPkgModalOpen, setIsPkgModalOpen] = useState(false);
   const [editingPkgId, setEditingPkgId] = useState(null);
   const [pkgFormData, setPkgFormData] = useState({
-    title: '', description: '', price: '', icon_type: 'Wrench', image_url: ''
+    title: '', description: '', price: '', icon_type: 'Wrench', image_url: '', category_heading: 'Regular Services'
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -76,7 +76,8 @@ const Services = () => {
     setEditingPkgId(pkg.id);
     setPkgFormData({
       title: pkg.title || '', description: pkg.description || '', price: pkg.price || '',
-      icon_type: pkg.icon_type || 'Wrench', image_url: (pkg.image_url && pkg.image_url !== 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg') ? pkg.image_url : ''
+      icon_type: pkg.icon_type || 'Wrench', image_url: (pkg.image_url && pkg.image_url !== 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg') ? pkg.image_url : '',
+      category_heading: pkg.category_heading || 'Regular Services'
     });
     setIsPkgModalOpen(true);
   };
@@ -152,7 +153,7 @@ const Services = () => {
         <div className="glass-panel rounded-2xl overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add-on Services</h2>
-            <button onClick={() => { setEditingPkgId(null); setPkgFormData({ title: '', description: '', price: '', icon_type: 'Wrench' }); setIsPkgModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
+            <button onClick={() => { setEditingPkgId(null); setPkgFormData({ title: '', description: '', price: '', icon_type: 'Wrench', image_url: '', category_heading: 'Regular Services' }); setIsPkgModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
               <Plus size={16} /> Add Add-on Service
             </button>
           </div>
@@ -160,7 +161,10 @@ const Services = () => {
             {pkgsLoading ? <div className="p-8 text-center col-span-full">Loading Packages...</div> : packages.length === 0 ? <div className="p-8 text-center col-span-full">No packages found.</div> : packages.map(pkg => (
               <div key={pkg.id} className={`relative p-6 rounded-2xl border ${pkg.popular ? 'border-primary shadow-primary/20' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-800 shadow-sm flex flex-col`}>
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-4">{pkg.title}</h3>
+                    <div>
+                      <span className="text-xs font-bold text-primary mb-1 block uppercase tracking-wider">{pkg.category_heading || 'Regular Services'}</span>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-4">{pkg.title}</h3>
+                    </div>
                     <div className="flex gap-2 shrink-0">
                       <button onClick={() => openEditPkg(pkg)} className="text-primary hover:text-primary-dark font-semibold text-sm">Edit</button>
                       <button onClick={() => window.confirm('Delete?') && deletePkgMutation.mutate(pkg.id)} className="text-red-500 hover:text-red-700 font-semibold text-sm">Delete</button>
@@ -196,7 +200,10 @@ const Services = () => {
       <Modal isOpen={isPkgModalOpen} onClose={() => setIsPkgModalOpen(false)} title={editingPkgId ? "Edit Add-on Service" : "Add New Add-on Service"}>
         <div className="max-h-[70vh] overflow-y-auto px-1 pb-4">
           <form onSubmit={handlePkgSubmit} className="space-y-4">
-            <div><label className="block text-sm font-medium mb-1">Add-on Title</label><input required type="text" value={pkgFormData.title} onChange={e => setPkgFormData({...pkgFormData, title: e.target.value})} className="input-field py-2 w-full" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Add-on Title</label><input required type="text" value={pkgFormData.title} onChange={e => setPkgFormData({...pkgFormData, title: e.target.value})} className="input-field py-2 w-full" /></div>
+              <div><label className="block text-sm font-medium mb-1">Category / Heading</label><input required type="text" value={pkgFormData.category_heading} onChange={e => setPkgFormData({...pkgFormData, category_heading: e.target.value})} placeholder="e.g. Regular Services" className="input-field py-2 w-full" /></div>
+            </div>
             <div><label className="block text-sm font-medium mb-1">Description</label><textarea required value={pkgFormData.description} onChange={e => setPkgFormData({...pkgFormData, description: e.target.value})} className="input-field py-2 w-full" rows="2" /></div>
             <div className="grid grid-cols-2 gap-4">
               <div><label className="block text-sm font-medium mb-1">Price (₹)</label><input required type="number" value={pkgFormData.price} onChange={e => setPkgFormData({...pkgFormData, price: e.target.value})} className="input-field py-2 w-full" /></div>
