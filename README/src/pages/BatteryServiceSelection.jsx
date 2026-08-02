@@ -93,7 +93,9 @@ const BatteryServiceSelection = () => {
             badge: pkg.badge,
             icon: iconComponent,
             includes: parsedIncludes,
-            popular: pkg.popular === 1 || pkg.popular === true
+            popular: pkg.popular === 1 || pkg.popular === true,
+            time_taken: pkg.time_taken || '4 Hrs Taken',
+            image_url: pkg.image_url || 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg'
           };
         });
 
@@ -1114,7 +1116,7 @@ const BatteryServiceSelection = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="bss-pkg-box">
                   <div className="bss-pkg-img">
-                    <img src="https://gomechanic.in/assets/img/customerpage/category/car-service.jpg" alt="Service" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={selectedPopupService.image_url} alt="Service" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
 
                   <div className="bss-pkg-content">
@@ -1122,37 +1124,27 @@ const BatteryServiceSelection = () => {
                       <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{selectedPopupService.title}</h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
                         <Clock size={12} />
-                        <span>4 Hrs Taken</span>
+                        <span>{selectedPopupService.time_taken}</span>
                       </div>
                     </div>
 
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      <span>• 4 Hrs Taken</span>
-                      <span>• 1000 Kms or 3 Months Warranty</span>
-                      <span>• Every 5000 Kms or 6 Months (Recommended)</span>
-                      <span>• Free Pick-up & Drop</span>
+                      <span>• {selectedPopupService.time_taken}</span>
                     </div>
 
                     <div className="bss-pkg-features">
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Wiper Fluid Replacement</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Battery Water Top Up</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Car Wash</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Interior Vacuuming (Carpet & Seats)</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Engine Oil Replacement</div>
-                      {showAllFeatures && (
-                        <>
-                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Oil Filter Replacement</div>
-                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Coolant Top Up (200 ml)</div>
-                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Air Filter Cleaning</div>
-                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Heater/Spark Plugs Checking</div>
-                        </>
-                      )}
-                      {!showAllFeatures && (
+                      {selectedPopupService.includes.slice(0, 5).map((feature, idx) => (
+                        <div key={idx} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
+                      ))}
+                      {showAllFeatures && selectedPopupService.includes.slice(5).map((feature, idx) => (
+                        <div key={idx + 5} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
+                      ))}
+                      {!showAllFeatures && selectedPopupService.includes.length > 5 && (
                         <div
                           style={{ color: '#22c55e', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center' }}
                           onClick={() => setShowAllFeatures(true)}
                         >
-                          + 4 more View All
+                          + {selectedPopupService.includes.length - 5} more View All
                         </div>
                       )}
                     </div>

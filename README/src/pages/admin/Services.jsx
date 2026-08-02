@@ -18,7 +18,7 @@ const Services = () => {
   const [isPkgModalOpen, setIsPkgModalOpen] = useState(false);
   const [editingPkgId, setEditingPkgId] = useState(null);
   const [pkgFormData, setPkgFormData] = useState({
-    title: '', description: '', price: '', oldPrice: '', badge: '', icon_type: 'Wrench', includes: [''], popular: false
+    title: '', description: '', price: '', oldPrice: '', badge: '', icon_type: 'Wrench', includes: [''], popular: false, time_taken: '4 Hrs Taken', image_url: 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg'
   });
 
   const availableIntervals = [1500, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000];
@@ -79,7 +79,8 @@ const Services = () => {
     if (!parsedIncludes || parsedIncludes.length === 0) parsedIncludes = [''];
     setPkgFormData({
       title: pkg.title || '', description: pkg.description || '', price: pkg.price || '', oldPrice: pkg.oldPrice || '',
-      badge: pkg.badge || '', icon_type: pkg.icon_type || 'Wrench', includes: parsedIncludes, popular: pkg.popular ? true : false
+      badge: pkg.badge || '', icon_type: pkg.icon_type || 'Wrench', includes: parsedIncludes, popular: pkg.popular ? true : false,
+      time_taken: pkg.time_taken || '4 Hrs Taken', image_url: pkg.image_url || 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg'
     });
     setIsPkgModalOpen(true);
   };
@@ -143,7 +144,7 @@ const Services = () => {
         <div className="glass-panel rounded-2xl overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Scheduled Packages</h2>
-            <button onClick={() => { setEditingPkgId(null); setPkgFormData({ title: '', description: '', price: '', oldPrice: '', badge: '', icon_type: 'Wrench', includes: [''], popular: false }); setIsPkgModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
+            <button onClick={() => { setEditingPkgId(null); setPkgFormData({ title: '', description: '', price: '', oldPrice: '', badge: '', icon_type: 'Wrench', includes: [''], popular: false, time_taken: '4 Hrs Taken', image_url: 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg' }); setIsPkgModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
               <Plus size={16} /> Add Package
             </button>
           </div>
@@ -221,6 +222,10 @@ const Services = () => {
                   <option value="Star">Star</option>
                 </select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Time Taken</label><input type="text" placeholder="e.g. 4 Hrs Taken" value={pkgFormData.time_taken} onChange={e => setPkgFormData({...pkgFormData, time_taken: e.target.value})} className="input-field py-2 w-full" /></div>
+              <div><label className="block text-sm font-medium mb-1">Image URL</label><input type="text" placeholder="https://..." value={pkgFormData.image_url} onChange={e => setPkgFormData({...pkgFormData, image_url: e.target.value})} className="input-field py-2 w-full" /></div>
             </div>
             <div>
               <label className="flex items-center space-x-2 text-sm font-medium cursor-pointer mt-2">

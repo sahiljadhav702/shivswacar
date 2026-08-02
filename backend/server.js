@@ -251,10 +251,10 @@ app.get("/api/packages", async (req, res) => {
 // POST new scheduled package
 app.post("/api/packages", async (req, res) => {
     try {
-        const { title, description, price, oldPrice, badge, icon_type, includes, popular } = req.body;
+        const { title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url } = req.body;
         const [result] = await db.query(
-            "INSERT INTO scheduled_packages (title, description, price, oldPrice, badge, icon_type, includes, popular) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0]
+            "INSERT INTO scheduled_packages (title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, time_taken, image_url]
         );
         res.json({ success: true, id: result.insertId });
     } catch (err) {
@@ -266,10 +266,10 @@ app.post("/api/packages", async (req, res) => {
 // PUT update scheduled package
 app.put("/api/packages/:id", async (req, res) => {
     try {
-        const { title, description, price, oldPrice, badge, icon_type, includes, popular } = req.body;
+        const { title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url } = req.body;
         await db.query(
-            "UPDATE scheduled_packages SET title=?, description=?, price=?, oldPrice=?, badge=?, icon_type=?, includes=?, popular=? WHERE id=?",
-            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, req.params.id]
+            "UPDATE scheduled_packages SET title=?, description=?, price=?, oldPrice=?, badge=?, icon_type=?, includes=?, popular=?, time_taken=?, image_url=? WHERE id=?",
+            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, time_taken, image_url, req.params.id]
         );
         res.json({ success: true });
     } catch (err) {
