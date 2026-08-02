@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Battery, Shield, Award, ShieldCheck, Wrench, TrendingUp, Clock, Star, Check, Zap, Settings, Truck, ArrowLeft, Calendar, CircleCheck, Plus, ChevronRight } from 'lucide-react';
+import { Battery, Shield, Award, ShieldCheck, Wrench, TrendingUp, Clock, Star, Check, Zap, Settings, Truck, ArrowLeft, Calendar, CircleCheck, Plus, ChevronRight, Wind, Circle, Paintbrush, Sparkles, Droplets, Search, Sun, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axiosConfig';
+import './BatteryServiceSelection.css';
 
 const BatteryServiceSelection = () => {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ const BatteryServiceSelection = () => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [activeTab, setActiveTab] = useState('interval');
   const [kmInput, setKmInput] = useState('');
+  const [selectedPopupService, setSelectedPopupService] = useState(null);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [partsList, setPartsList] = useState([]);
 
   const serviceIntervals = ['2 Months / 1500 Km'];
   for (let i = 1; i <= 50; i++) {
@@ -33,12 +37,12 @@ const BatteryServiceSelection = () => {
   const handleKmInputChange = (e) => {
     const value = e.target.value;
     setKmInput(value);
-    
+
     if (value && !isNaN(value)) {
       const numValue = parseInt(value, 10);
       let closestInterval = serviceIntervals[0];
       let minDiff = Infinity;
-      
+
       serviceIntervals.forEach(interval => {
         const match = interval.match(/(\d+)\s*Kms?/i);
         if (match) {
@@ -50,82 +54,63 @@ const BatteryServiceSelection = () => {
           }
         }
       });
-      
+
       setSelectedInterval(closestInterval);
     }
   };
 
   useEffect(() => {
-    const fetchPackages = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/services');
-        const data = response.data;
+        const [servicesRes, packagesRes] = await Promise.all([
+          api.get('/services'),
+          api.get('/packages')
+        ]);
         
-        const mappedPackages = data.map((pkg, index) => {
-          let parsedParts = [];
-          if (pkg.parts) {
-            try { parsedParts = typeof pkg.parts === 'string' ? JSON.parse(pkg.parts) : pkg.parts; } catch(e) {}
+        setPartsList(servicesRes.data || []);
+        
+        const mappedPackages = (packagesRes.data || []).map(pkg => {
+          let parsedIncludes = [];
+          try {
+            parsedIncludes = typeof pkg.includes === 'string' ? JSON.parse(pkg.includes) : pkg.includes;
+          } catch(e) {
+            parsedIncludes = ['Standard Inspection'];
           }
+          
+          let iconComponent = <Wrench size={28} />;
+          if (pkg.icon_type === 'Battery') iconComponent = <Battery size={28} />;
+          if (pkg.icon_type === 'Shield') iconComponent = <Shield size={28} />;
+          if (pkg.icon_type === 'Award') iconComponent = <Award size={28} />;
+          if (pkg.icon_type === 'Zap') iconComponent = <Zap size={28} />;
+          if (pkg.icon_type === 'Star') iconComponent = <Star size={28} />;
+
           return {
             id: pkg.id.toString(),
-            title: pkg.name,
-            desc: pkg.description || 'Comprehensive battery care with performance optimization.',
-            price: pkg.price,
-            oldPrice: Number(pkg.price) + Math.floor(Number(pkg.price) * 0.3),
-            badge: 'Special Offer',
-            popular: index === 1,
-            includes: pkg.description ? pkg.description.split(',').map(s => s.trim()) : ['Standard Inspection', 'Voltage Test', 'Cleaning'],
-            parts: parsedParts
+            title: pkg.title,
+            desc: pkg.description,
+            price: Number(pkg.price),
+            oldPrice: pkg.oldPrice ? Number(pkg.oldPrice) : null,
+            badge: pkg.badge,
+            icon: iconComponent,
+            includes: parsedIncludes,
+            popular: pkg.popular === 1 || pkg.popular === true
           };
         });
-        
+
         setPackages(mappedPackages);
         if (mappedPackages.length > 0) {
           setSelectedPackage(mappedPackages[0].id);
         }
       } catch (err) {
+        console.error("Error fetching data:", err);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPackages();
+    fetchData();
   }, []);
 
-  const defaultPackages = [
-    {
-      id: 'Basic',
-      title: 'Essential Battery Care',
-      desc: 'Keep your battery healthy with professional inspection and terminal maintenance.',
-      price: 499,
-      oldPrice: 799,
-      badge: '20% OFF',
-      icon: <Battery size={28} />,
-      includes: ['Battery Health Check', 'Terminal Cleaning', 'Voltage Test', 'Charging System Inspection', 'Water Level Check']
-    },
-    {
-      id: 'Standard',
-      title: 'Premium Battery Service',
-      desc: 'Complete battery optimization with load testing and electrical system diagnostics.',
-      price: 999,
-      oldPrice: 1499,
-      badge: '35% OFF',
-      popular: true,
-      icon: <Shield size={28} />,
-      includes: ['Everything in Essential', 'Battery Charging', 'Load Test', 'Alternator Test', 'Electrical Connection Inspection']
-    },
-    {
-      id: 'Premium',
-      title: 'Elite Battery Protection',
-      desc: 'Comprehensive care with doorstep support, jump start, and warranty assistance.',
-      price: 1499,
-      oldPrice: 2299,
-      badge: '40% OFF',
-      icon: <Award size={28} />,
-      includes: ['Everything in Premium', 'Doorstep Installation', 'Jump Start Assistance', 'Battery Replacement Support', 'Warranty Assistance', 'Priority Service']
-    }
-  ];
-
-  const displayPackages = packages.length > 0 ? packages : defaultPackages;
+  const displayPackages = packages;
 
   useEffect(() => {
     setSelectedExtraParts([]);
@@ -142,14 +127,16 @@ const BatteryServiceSelection = () => {
   ];
 
   const individualServices = [
-    { id: 's1', title: 'Battery Replacement', price: 299, icon: <Battery size={22} />, desc: 'Replace with premium quality battery' },
-    { id: 's2', title: 'Battery Health Check', price: 199, icon: <Shield size={22} />, desc: 'Complete diagnostic checkup' },
-    { id: 's3', title: 'Jump Start Service', price: 399, icon: <Zap size={22} />, desc: 'Emergency jump start assistance' },
-    { id: 's4', title: 'Battery Charging', price: 249, icon: <Zap size={22} />, desc: 'Full charge with maintenance' },
-    { id: 's5', title: 'Terminal Cleaning', price: 149, icon: <Wrench size={22} />, desc: 'Clean & protect terminals' },
-    { id: 's6', title: 'Alternator Testing', price: 299, icon: <Settings size={22} />, desc: 'Alternator performance check' },
-    { id: 's7', title: 'Warranty Assistance', price: 0, icon: <ShieldCheck size={22} />, freeText: 'Free', desc: 'Claim support & documentation' },
-    { id: 's8', title: 'Doorstep Installation', price: 0, icon: <Truck size={22} />, freeText: 'Free', desc: 'Installation at your location' },
+    { id: 's1', title: 'Car Services', price: 1499, icon: <Wrench size={22} />, desc: 'General car service & maintenance' },
+    { id: 's2', title: 'AC Service & Repair', price: 999, icon: <Wind size={22} />, desc: 'AC cooling & repair' },
+    { id: 's3', title: 'Batteries', price: 2499, icon: <Battery size={22} />, desc: 'Replacement and health check' },
+    { id: 's4', title: 'Tyres & Wheel Care', price: 499, icon: <Circle size={22} />, desc: 'Alignment, balancing & more' },
+    { id: 's5', title: 'Denting & Painting', price: 1999, icon: <Paintbrush size={22} />, desc: 'Bodywork and color restoration' },
+    { id: 's6', title: 'Detailing Services', price: 1299, icon: <Sparkles size={22} />, desc: 'Exterior & interior detailing' },
+    { id: 's7', title: 'Car Spa & Cleaning', price: 599, icon: <Droplets size={22} />, desc: 'Deep cleaning and washing' },
+    { id: 's8', title: 'Car Inspections', price: 499, icon: <Search size={22} />, desc: 'Comprehensive vehicle inspection' },
+    { id: 's9', title: 'Windshields & Lights', price: 899, icon: <Sun size={22} />, desc: 'Glass repair & lighting check' },
+    { id: 's10', title: 'Suspension & Fitments', price: 1599, icon: <Settings size={22} />, desc: 'Shock absorbers & fitments' },
   ];
 
   const handleAddonToggle = (service) => {
@@ -162,12 +149,12 @@ const BatteryServiceSelection = () => {
 
   const currentParts = (() => {
     let adminParts = [];
-    if (displayPackages && displayPackages.length > 0) {
-      displayPackages.forEach(pkg => {
-        let pkgIntervals = [];
+    if (partsList && partsList.length > 0) {
+      partsList.forEach(part => {
+        let partIntervals = [];
         try {
-          pkgIntervals = typeof pkg.parts === 'string' ? JSON.parse(pkg.parts) : (pkg.parts || []);
-        } catch (e) {}
+          partIntervals = typeof part.parts === 'string' ? JSON.parse(part.parts) : (part.parts || []);
+        } catch (e) { }
 
         let isDefaultForInterval = false;
         let is1500 = false;
@@ -179,14 +166,14 @@ const BatteryServiceSelection = () => {
           if (match) {
             const kmStr = match[1];
             const kmNum = Number(kmStr);
-            isDefaultForInterval = pkgIntervals.includes(kmNum) || pkgIntervals.includes(kmStr);
+            isDefaultForInterval = partIntervals.includes(kmNum) || partIntervals.includes(kmStr);
           }
         }
 
         adminParts.push({
-          id: `admin-part-${pkg.id}`,
-          name: pkg.title,
-          basePrice: is1500 ? 0 : (Number(pkg.price) || 0),
+          id: `admin-part-${part.id}`,
+          name: part.name,
+          basePrice: is1500 ? 0 : (Number(part.price) || 0),
           icon: '🔧',
           isDefault: isDefaultForInterval || is1500,
           isIncludedIn1500: is1500
@@ -205,10 +192,9 @@ const BatteryServiceSelection = () => {
   };
 
   const getSubtotal = () => {
-    const defaultPartsTotal = currentParts.filter(p => p.isDefault).reduce((sum, item) => sum + item.basePrice, 0);
-    const extraPartsTotal = selectedExtraParts.reduce((sum, item) => sum + item.basePrice, 0);
-    const addonsTotal = selectedAddons.reduce((sum, item) => sum + item.price, 0);
-    return defaultPartsTotal + extraPartsTotal + addonsTotal;
+    const partsTotal = selectedInterval ? currentParts.reduce((sum, item) => sum + item.basePrice, 0) : 0;
+    const addonsTotal = selectedAddons.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    return partsTotal + addonsTotal;
   };
 
   const subtotal = getSubtotal();
@@ -233,7 +219,7 @@ const BatteryServiceSelection = () => {
       background: 'linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%)',
       padding: '20px',
       paddingTop: '100px',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      fontFamily: "'Playfair Display', 'Times New Roman', Georgia, serif"
     },
     main: {
       maxWidth: '1280px',
@@ -278,11 +264,13 @@ const BatteryServiceSelection = () => {
       marginTop: '8px'
     },
     mainTitle: {
-      fontSize: '32px',
+      fontSize: '34px',
       fontWeight: 800,
-      color: '#1e293b',
+      background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
       margin: '0 0 8px 0',
-      letterSpacing: '-0.5px'
+      letterSpacing: '-1px'
     },
     subtitle: {
       fontSize: '16px',
@@ -426,21 +414,21 @@ const BatteryServiceSelection = () => {
       marginTop: '16px'
     },
     serviceCard: {
-      background: 'white',
-      borderRadius: '12px',
-      padding: '16px',
-      border: '2px solid #f1f5f9',
+      background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+      borderRadius: '16px',
+      padding: '18px',
+      border: '1px solid rgba(226, 232, 240, 0.8)',
       cursor: 'pointer',
-      transition: 'all 0.25s',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       display: 'flex',
       alignItems: 'center',
-      gap: '14px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+      gap: '16px',
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
     },
     serviceSelected: {
       borderColor: '#3b82f6',
-      background: '#f0f7ff',
-      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+      background: 'linear-gradient(145deg, #eff6ff, #ffffff)',
+      boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 8px 10px -6px rgba(59, 130, 246, 0.1)'
     },
     serviceIconWrapper: {
       position: 'relative',
@@ -733,20 +721,43 @@ const BatteryServiceSelection = () => {
     .bss-slider:focus {
       outline: none;
     }
+    .bss-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .bss-modal-content { background: white; border-radius: 12px; padding: 24px; width: 100%; max-width: 850px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .bss-pkg-box { display: flex; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden; background: white; }
+    .bss-pkg-img { width: 250px; flex-shrink: 0; background: #f8f8f8; }
+    .bss-pkg-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .bss-pkg-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; margin-bottom: 20px; }
+    .bss-pkg-feature-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; }
+    .bss-cart-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 16px; border-top: 1px dashed #eaeaea; }
+    .bss-cart-price-col { display: flex; align-items: baseline; gap: 8px; }
+    .bss-cart-btn { border: 1px solid #ef4444; color: #ef4444; background: white; padding: 10px 20px; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px; white-space: nowrap; }
+    
     @media (max-width: 1150px) {
       .bss-main-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
       .bss-right-pane { position: static !important; }
     }
     @media (max-width: 640px) {
-      .bss-services-grid { grid-template-columns: 1fr !important; }
-      .bss-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .bss-container { padding: 12px !important; padding-top: 80px !important; }
+      .bss-services-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .bss-service-card { flex-direction: column !important; align-items: center !important; text-align: center !important; padding: 12px 8px !important; gap: 8px !important; }
+      .bss-features-grid { grid-template-columns: 1fr !important; }
       .bss-slider-container { padding: 16px !important; }
       .bss-parts-section { padding: 16px !important; }
+      .bss-modal-content { padding: 16px !important; }
+      .bss-pkg-box { flex-direction: column !important; }
+      .bss-pkg-img { width: 100% !important; height: 180px !important; }
+      .bss-pkg-content { padding: 16px !important; }
+      .bss-pkg-features { grid-template-columns: 1fr !important; }
+      .bss-cart-row { flex-wrap: nowrap !important; gap: 8px !important; }
+      .bss-cart-price-col { gap: 4px !important; flex-wrap: wrap !important; line-height: 1.2 !important; }
+      .bss-cart-price-col span:first-child { font-size: 11px !important; }
+      .bss-cart-price-col span:last-child { font-size: 16px !important; }
+      .bss-cart-btn { padding: 6px 10px !important; font-size: 12px !important; flex-shrink: 0 !important; }
     }
   `;
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="bss-container">
       <style>{sliderStyles}</style>
       <div style={styles.main} className="bss-main-grid">
         <div style={styles.leftPane}>
@@ -763,13 +774,13 @@ const BatteryServiceSelection = () => {
             variants={fadeInUp}
             style={styles.tabsContainer}
           >
-            <button 
+            <button
               style={{ ...styles.tabButton, ...(activeTab === 'interval' ? styles.activeTab : styles.inactiveTab) }}
               onClick={() => setActiveTab('interval')}
             >
               Select Service Interval
             </button>
-            <button 
+            <button
               style={{ ...styles.tabButton, ...(activeTab === 'addons' ? styles.activeTab : styles.inactiveTab) }}
               onClick={() => setActiveTab('addons')}
             >
@@ -786,7 +797,6 @@ const BatteryServiceSelection = () => {
                 style={styles.titleSection}
               >
                 <h1 style={styles.mainTitle}>Select Service Interval</h1>
-                <p style={styles.subtitle}>Choose the right maintenance schedule for your vehicle's battery health</p>
               </motion.div>
 
               <motion.div
@@ -809,8 +819,8 @@ const BatteryServiceSelection = () => {
 
                 <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '14px', fontWeight: 500, color: '#475569' }}>Or enter kilometers:</span>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={kmInput}
                     onChange={handleKmInputChange}
                     placeholder="e.g. 10000"
@@ -833,10 +843,10 @@ const BatteryServiceSelection = () => {
                     max={serviceIntervals.length - 1}
                     step="1"
                     value={selectedInterval ? serviceIntervals.indexOf(selectedInterval) : 0}
-                    onChange={(e) => setSelectedInterval(serviceIntervals[parseInt(e.target.value)])}
-                    style={{ ...styles.slider, opacity: kmInput ? 0.5 : 1, cursor: kmInput ? 'not-allowed' : 'pointer' }}
+                    onChange={() => { }}
+                    style={{ ...styles.slider, opacity: 0.7, cursor: 'not-allowed' }}
                     className="bss-slider"
-                    disabled={kmInput !== ''}
+                    disabled={true}
                   />
                   <div style={styles.sliderTicks}>
                     <span>{serviceIntervals[0]}</span>
@@ -898,9 +908,6 @@ const BatteryServiceSelection = () => {
                                     <span style={styles.partPrice}>{formatPrice(part.basePrice)}</span>
                                   ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                                      {!isExtraSelected && (
-                                        <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>Not Included</span>
-                                      )}
                                       <span style={{ ...styles.partPrice, color: isExtraSelected ? '#3b82f6' : '#64748b' }}>
                                         {isExtraSelected ? formatPrice(part.basePrice) : `+ ${formatPrice(part.basePrice)}`}
                                       </span>
@@ -927,11 +934,7 @@ const BatteryServiceSelection = () => {
               variants={fadeInUp}
               style={styles.addonsSection}
             >
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>Add-on Services</h2>
-                <span style={styles.sectionBadge}>{selectedAddons.length} selected</span>
-              </div>
-              <p style={styles.subtitle}>Enhance your service with these additional care options</p>
+
 
               <motion.div
                 style={styles.servicesGrid}
@@ -949,7 +952,8 @@ const BatteryServiceSelection = () => {
                       style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
                       variants={fadeInUp}
                       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                      onClick={() => handleAddonToggle(service)}
+                      onClick={() => setSelectedPopupService(service)}
+                      className="bss-service-card"
                     >
                       <div style={styles.serviceIconWrapper}>
                         <div style={styles.serviceIcon}>{service.icon}</div>
@@ -959,20 +963,7 @@ const BatteryServiceSelection = () => {
                         <div style={styles.serviceTitle}>{service.title}</div>
                         <div style={styles.serviceDesc}>{service.desc}</div>
                       </div>
-                      <div style={styles.serviceAction}>
-                        <div style={styles.servicePrice}>
-                          {service.freeText ? service.freeText : formatPrice(service.price)}
-                        </div>
-                        <button
-                          style={{ ...styles.addonBtn, ...(isSelected ? styles.addonAdded : {}) }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddonToggle(service);
-                          }}
-                        >
-                          {isSelected ? <Check size={16} /> : <Plus size={16} />}
-                        </button>
-                      </div>
+
                     </motion.div>
                   );
                 })}
@@ -989,76 +980,51 @@ const BatteryServiceSelection = () => {
             style={styles.sidebar}
           >
             <div style={styles.sidebarCard}>
-              <div style={styles.cardHeader}>
-                <h3 style={styles.sidebarTitle}>Vehicle Details</h3>
-                <div style={styles.vehicleBadge}>
-                  <span style={styles.badgeDot}></span>
-                  Active
-                </div>
-              </div>
-              <div style={styles.vehicleInfo}>
-                <div style={styles.vehicleRow}>
-                  <span style={styles.vehicleLabel}>Registration</span>
-                  <span style={styles.vehicleValue}>{regNumber}</span>
-                </div>
-                <div style={styles.vehicleRow}>
-                  <span style={styles.vehicleLabel}>Brand</span>
-                  <span style={styles.vehicleValue}>{brand}</span>
-                </div>
-                <div style={styles.vehicleRow}>
-                  <span style={styles.vehicleLabel}>Model</span>
-                  <span style={styles.vehicleValue}>{model}</span>
-                </div>
-                <div style={styles.vehicleRow}>
-                  <span style={styles.vehicleLabel}>Fuel Type</span>
-                  <span style={styles.vehicleValue}>{fuel}</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={styles.sidebarCard}>
               <h3 style={styles.sidebarTitle}>Order Summary</h3>
 
               <div style={styles.summaryItems}>
-                <div style={{ ...styles.summaryRow, ...styles.summaryMain }}>
-                  <span>Service Interval</span>
-                  <span style={styles.summaryHighlight}>
-                    {selectedInterval || 'Not Selected'}
-                  </span>
-                </div>
-
-                {currentParts.filter(p => p.isDefault).length > 0 ? (
-                  currentParts.filter(p => p.isDefault).map((part, idx) => (
-                    <div key={idx} style={{ ...styles.summaryRow, ...styles.summarySub }}>
-                      <span>{part.icon} {part.name}</span>
-                      <span>{formatPrice(part.basePrice)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ ...styles.summaryRow, ...styles.summarySub }}>
-                    <span>🔍 Basic Inspection</span>
-                    <span style={styles.textFree}>Free</span>
-                  </div>
-                )}
-
-                {selectedExtraParts.map((part, idx) => (
-                  <div key={`extra-${idx}`} style={{ ...styles.summaryRow, ...styles.summarySub }}>
-                    <span>{part.icon} {part.name} <span style={{color: '#3b82f6', fontSize: '11px'}}>(Added)</span></span>
-                    <span>{formatPrice(part.basePrice)}</span>
-                  </div>
-                ))}
-
-                {selectedAddons.length > 0 && (
+                {selectedInterval && (
                   <>
-                    <div style={styles.summaryDivider}></div>
-                    {selectedAddons.map(addon => (
-                      <div key={addon.id} style={{ ...styles.summaryRow, ...styles.summarySub }}>
-                        <span>{addon.icon} {addon.title}</span>
-                        <span>{formatPrice(addon.price)}</span>
+                    <div style={{ ...styles.summaryRow, ...styles.summaryMain }}>
+                      <span>Service Interval</span>
+                      <span style={styles.summaryHighlight}>
+                        {selectedInterval}
+                      </span>
+                    </div>
+                    {kmInput && (
+                      <div style={{ ...styles.summaryRow, ...styles.summaryMain, borderBottom: 'none', paddingBottom: '0' }}>
+                        <span>Kilometers</span>
+                        <span style={styles.summaryHighlight}>
+                          {kmInput} Km
+                        </span>
                       </div>
-                    ))}
+                    )}
+
+                    {currentParts.length > 0 ? (
+                      currentParts.map((part, idx) => (
+                        <div key={idx} style={{ ...styles.summaryRow, ...styles.summarySub }}>
+                          <span>{part.icon} {part.name}</span>
+                          <span>{formatPrice(part.basePrice)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ ...styles.summaryRow, ...styles.summarySub }}>
+                        <span>🔍 Basic Inspection</span>
+                        <span style={styles.textFree}>Free</span>
+                      </div>
+                    )}
                   </>
                 )}
+
+                {selectedAddons.length > 0 && selectedAddons.map((addon, idx) => (
+                  <div key={`addon-${idx}`} style={{ ...styles.summaryRow, ...styles.summarySub }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: '#3b82f6' }}>➕</span>
+                      <span>{addon.title}</span>
+                    </div>
+                    <span>{formatPrice(addon.price)}</span>
+                  </div>
+                ))}
               </div>
 
               <div style={styles.summaryDivider}></div>
@@ -1119,31 +1085,148 @@ const BatteryServiceSelection = () => {
         </div>
       </div>
 
-      <motion.div
-        style={styles.bottom}
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <h2 style={styles.bottomTitle}>Why Choose Us</h2>
-        <div style={styles.featuresGrid} className="bss-features-grid">
-          {features.map((feature, idx) => (
+
+      <AnimatePresence>
+        {selectedPopupService && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bss-modal-overlay"
+            onClick={() => { setSelectedPopupService(null); setShowAllFeatures(false); }}
+          >
             <motion.div
-              key={idx}
-              style={styles.featureItem}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.08 }}
-              whileHover={{ y: -2 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bss-modal-content"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div style={styles.featureIcon}>{feature.icon}</div>
-              <span style={styles.featureText}>{feature.text}</span>
+              <button
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
+                onClick={() => { setSelectedPopupService(null); setShowAllFeatures(false); }}
+              >
+                <X size={24} />
+              </button>
+
+              <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px', marginTop: 0 }}>Scheduled Packages</h2>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="bss-pkg-box">
+                  <div className="bss-pkg-img">
+                    <img src="https://gomechanic.in/assets/img/customerpage/category/car-service.jpg" alt="Service" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+
+                  <div className="bss-pkg-content">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{selectedPopupService.title}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
+                        <Clock size={12} />
+                        <span>4 Hrs Taken</span>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <span>• 4 Hrs Taken</span>
+                      <span>• 1000 Kms or 3 Months Warranty</span>
+                      <span>• Every 5000 Kms or 6 Months (Recommended)</span>
+                      <span>• Free Pick-up & Drop</span>
+                    </div>
+
+                    <div className="bss-pkg-features">
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Wiper Fluid Replacement</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Battery Water Top Up</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Car Wash</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Interior Vacuuming (Carpet & Seats)</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Engine Oil Replacement</div>
+                      {showAllFeatures && (
+                        <>
+                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Oil Filter Replacement</div>
+                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Coolant Top Up (200 ml)</div>
+                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Air Filter Cleaning</div>
+                          <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Heater/Spark Plugs Checking</div>
+                        </>
+                      )}
+                      {!showAllFeatures && (
+                        <div
+                          style={{ color: '#22c55e', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center' }}
+                          onClick={() => setShowAllFeatures(true)}
+                        >
+                          + 4 more View All
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bss-cart-row">
+                      <div className="bss-cart-price-col">
+                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. {Math.round(selectedPopupService.price * 1.3)}</span>
+                        <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ {selectedPopupService.price}</span>
+                      </div>
+                      <button
+                        className="bss-cart-btn"
+                        onClick={() => {
+                          handleAddonToggle(selectedPopupService);
+                          setSelectedPopupService(null);
+                          setShowAllFeatures(false);
+                        }}
+                      >
+                        + ADD TO CART
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bss-pkg-box">
+                  <div className="bss-pkg-img">
+                    <img src="https://gomechanic.in/assets/img/customerpage/category/car-service.jpg" alt="Front Brake Pads" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+
+                  <div className="bss-pkg-content">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>Front Brake Pads</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
+                        <Clock size={12} />
+                        <span>Takes 3 Hours</span>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <span>• Takes 3 Hours</span>
+                      <span>• 1 Month Warranty</span>
+                      <span>• Every 20000 Kms or 12 Months (Recommended)</span>
+                    </div>
+
+                    <div className="bss-pkg-features">
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Opening & Fitting of Front Brake Pads</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Front Brake Pads Replacement (OES)</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Applicable for Set of 2 Front Brake Pads</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Inspection of Front Brake Calipers</div>
+                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Prices are Estimated and Subject to Change Based on Part Availability</div>
+                    </div>
+
+                    <div className="bss-cart-row">
+                      <div className="bss-cart-price-col">
+                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. 2474</span>
+                        <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ 1979</span>
+                      </div>
+                      <button
+                        className="bss-cart-btn"
+                        onClick={() => {
+                          handleAddonToggle({ id: 'front-brake-pads', title: 'Front Brake Pads', price: 1979 });
+                          setSelectedPopupService(null);
+                          setShowAllFeatures(false);
+                        }}
+                      >
+                        + ADD TO CART
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
-          ))}
-        </div>
-      </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

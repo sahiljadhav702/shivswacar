@@ -237,6 +237,57 @@ app.delete("/api/bookings/:id", async (req, res) => {
     }
 });
 
+// GET scheduled packages
+app.get("/api/packages", async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM scheduled_packages ORDER BY id ASC");
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// POST new scheduled package
+app.post("/api/packages", async (req, res) => {
+    try {
+        const { title, description, price, oldPrice, badge, icon_type, includes, popular } = req.body;
+        const [result] = await db.query(
+            "INSERT INTO scheduled_packages (title, description, price, oldPrice, badge, icon_type, includes, popular) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0]
+        );
+        res.json({ success: true, id: result.insertId });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// PUT update scheduled package
+app.put("/api/packages/:id", async (req, res) => {
+    try {
+        const { title, description, price, oldPrice, badge, icon_type, includes, popular } = req.body;
+        await db.query(
+            "UPDATE scheduled_packages SET title=?, description=?, price=?, oldPrice=?, badge=?, icon_type=?, includes=?, popular=? WHERE id=?",
+            [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, req.params.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// DELETE scheduled package
+app.delete("/api/packages/:id", async (req, res) => {
+    try {
+        await db.query("DELETE FROM scheduled_packages WHERE id=?", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
 
 // POST new vehicle
 app.post("/api/vehicles", async (req, res) => {
