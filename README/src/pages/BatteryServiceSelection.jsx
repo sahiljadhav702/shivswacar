@@ -1138,68 +1138,23 @@ const BatteryServiceSelection = () => {
                       <div className="bss-cart-price-col">
                         <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. {Math.round(selectedPopupService.price * 1.3)}</span>
                         <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ {selectedPopupService.price}</span>
+                        <button
+                          className="bss-cart-btn"
+                          style={selectedAddons.some(a => a.id === selectedPopupService.id) ? { color: '#ef4444', borderColor: '#ef4444' } : { color: '#3b82f6', borderColor: '#3b82f6' }}
+                          onClick={() => {
+                            handleAddonToggle(selectedPopupService);
+                            setSelectedPopupService(null);
+                            setShowAllFeatures(false);
+                          }}
+                        >
+                          {selectedAddons.some(a => a.id === selectedPopupService.id) ? '- REMOVE FROM CART' : '+ ADD TO CART'}
+                        </button>
                       </div>
-                      <button
-                        className="bss-cart-btn"
-                        onClick={() => {
-                          handleAddonToggle(selectedPopupService);
-                          setSelectedPopupService(null);
-                          setShowAllFeatures(false);
-                        }}
-                      >
-                        + ADD TO CART
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bss-pkg-box">
-                  <div className="bss-pkg-img">
-                    <img src="https://gomechanic.in/assets/img/customerpage/category/car-service.jpg" alt="Front Brake Pads" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-
-                  <div className="bss-pkg-content">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>Front Brake Pads</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
-                        <Clock size={12} />
-                        <span>Takes 3 Hours</span>
-                      </div>
-                    </div>
-
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      <span>• Takes 3 Hours</span>
-                      <span>• 1 Month Warranty</span>
-                      <span>• Every 20000 Kms or 12 Months (Recommended)</span>
-                    </div>
-
-                    <div className="bss-pkg-features">
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Opening & Fitting of Front Brake Pads</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Front Brake Pads Replacement (OES)</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Applicable for Set of 2 Front Brake Pads</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Inspection of Front Brake Calipers</div>
-                      <div className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> Prices are Estimated and Subject to Change Based on Part Availability</div>
-                    </div>
-
-                    <div className="bss-cart-row">
-                      <div className="bss-cart-price-col">
-                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. 2474</span>
-                        <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ 1979</span>
-                      </div>
-                      <button
-                        className="bss-cart-btn"
-                        onClick={() => {
-                          handleAddonToggle({ id: 'front-brake-pads', title: 'Front Brake Pads', price: 1979 });
-                          setSelectedPopupService(null);
-                          setShowAllFeatures(false);
-                        }}
-                      >
-                        + ADD TO CART
-                      </button>
                     </div>
                   </div>
                 </div>
               </div>
+
             </motion.div>
           </motion.div>
         )}
