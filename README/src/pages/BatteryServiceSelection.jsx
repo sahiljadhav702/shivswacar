@@ -1120,27 +1120,27 @@ const BatteryServiceSelection = () => {
                       <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{selectedPopupService.title}</h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
                         <Clock size={12} />
-                        <span>{selectedPopupService.time_taken}</span>
+                        <span>{selectedPopupService.time_taken || '2 Hrs Taken'}</span>
                       </div>
                     </div>
 
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      <span>• {selectedPopupService.time_taken}</span>
+                      <span>• {selectedPopupService.time_taken || '2 Hrs Taken'}</span>
                     </div>
 
                     <div className="bss-pkg-features">
-                      {selectedPopupService.includes.slice(0, 5).map((feature, idx) => (
+                      {(selectedPopupService.includes || [selectedPopupService.desc]).slice(0, 5).map((feature, idx) => (
                         <div key={idx} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
                       ))}
-                      {showAllFeatures && selectedPopupService.includes.slice(5).map((feature, idx) => (
+                      {showAllFeatures && (selectedPopupService.includes || []).slice(5).map((feature, idx) => (
                         <div key={idx + 5} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
                       ))}
-                      {!showAllFeatures && selectedPopupService.includes.length > 5 && (
+                      {!showAllFeatures && (selectedPopupService.includes || []).length > 5 && (
                         <div
                           style={{ color: '#22c55e', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center' }}
                           onClick={() => setShowAllFeatures(true)}
                         >
-                          + {selectedPopupService.includes.length - 5} more View All
+                          + {(selectedPopupService.includes || []).length - 5} more View All
                         </div>
                       )}
                     </div>
