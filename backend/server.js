@@ -271,7 +271,12 @@ app.get("/api/packages", async (req, res) => {
 // POST new scheduled package
 app.post("/api/packages", async (req, res) => {
     try {
-        const { title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url, category_heading } = req.body;
+        const { 
+            title, description, price, 
+            oldPrice = null, badge = null, icon_type, 
+            includes = null, popular = 0, time_taken = null, 
+            image_url = null, category_heading = 'Regular Services' 
+        } = req.body;
         const [result] = await db.query(
             "INSERT INTO scheduled_packages (title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url, category_heading) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, time_taken, image_url, category_heading || 'Regular Services']
@@ -286,7 +291,12 @@ app.post("/api/packages", async (req, res) => {
 // PUT update scheduled package
 app.put("/api/packages/:id", async (req, res) => {
     try {
-        const { title, description, price, oldPrice, badge, icon_type, includes, popular, time_taken, image_url, category_heading } = req.body;
+        const { 
+            title, description, price, 
+            oldPrice = null, badge = null, icon_type, 
+            includes = null, popular = 0, time_taken = null, 
+            image_url = null, category_heading = 'Regular Services' 
+        } = req.body;
         await db.query(
             "UPDATE scheduled_packages SET title=?, description=?, price=?, oldPrice=?, badge=?, icon_type=?, includes=?, popular=?, time_taken=?, image_url=?, category_heading=? WHERE id=?",
             [title, description, price, oldPrice, badge, icon_type, includes ? JSON.stringify(includes) : null, popular ? 1 : 0, time_taken, image_url, category_heading || 'Regular Services', req.params.id]
