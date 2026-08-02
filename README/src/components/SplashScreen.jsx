@@ -66,7 +66,6 @@ const SplashScreen = ({ onComplete }) => {
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           <div className="splash-loader-wrapper">
-            <div className="splash-custom-loader"></div>
             <div className="splash-loading-text">
               Initializing Engine... {progress}%
             </div>
