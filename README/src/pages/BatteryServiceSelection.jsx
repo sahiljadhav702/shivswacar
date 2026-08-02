@@ -25,7 +25,7 @@ const BatteryServiceSelection = () => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [activeTab, setActiveTab] = useState('interval');
   const [kmInput, setKmInput] = useState('');
-  const [selectedPopupService, setSelectedPopupService] = useState(null);
+  const [selectedAddonCategory, setSelectedAddonCategory] = useState(null);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [partsList, setPartsList] = useState([]);
 
@@ -929,52 +929,43 @@ const BatteryServiceSelection = () => {
 
 
               <div>
-                {/* Grouping Packages by Category */}
-                {Object.entries(
-                  packages.reduce((acc, pkg) => {
-                    const cat = pkg.category_heading || 'Regular Services';
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(pkg);
-                    return acc;
-                  }, {})
-                ).map(([heading, groupPackages]) => (
-                  <div key={heading} style={{ marginBottom: '32px' }}>
-                    <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937', borderBottom: '2px solid #e5e7eb', paddingBottom: '8px' }}>
-                      {heading}
-                    </h2>
-                    <motion.div
-                      style={styles.servicesGrid}
-                      variants={staggerContainer}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true }}
-                      className="bss-services-grid"
-                    >
-                      {groupPackages.map((service, idx) => {
-                        const isSelected = selectedAddons.some(a => a.id === service.id);
-                        return (
-                          <motion.div
-                            key={service.id}
-                            style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
-                            variants={fadeInUp}
-                            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                            onClick={() => setSelectedPopupService(service)}
-                            className="bss-service-card"
-                          >
-                            <div style={styles.serviceIconWrapper}>
-                              <div style={styles.serviceIcon}>{service.icon}</div>
-                              {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
-                            </div>
-                            <div style={styles.serviceInfo}>
-                              <div style={styles.serviceTitle}>{service.title}</div>
-                              <div style={styles.serviceDesc}>{service.desc}</div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
-                  </div>
-                ))}
+                <motion.div
+                  style={styles.servicesGrid}
+                  variants={staggerContainer}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="bss-services-grid"
+                >
+                  {Object.entries(
+                    packages.reduce((acc, pkg) => {
+                      const cat = pkg.category_heading || 'Regular Services';
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(pkg);
+                      return acc;
+                    }, {})
+                  ).map(([heading, groupPackages], idx) => {
+                    const firstPkg = groupPackages[0];
+                    return (
+                      <motion.div
+                        key={heading}
+                        style={styles.serviceCard}
+                        variants={fadeInUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        onClick={() => setSelectedAddonCategory(heading)}
+                        className="bss-service-card cursor-pointer"
+                      >
+                        <div style={styles.serviceIconWrapper}>
+                          <div style={styles.serviceIcon}>{firstPkg.icon}</div>
+                        </div>
+                        <div style={styles.serviceInfo}>
+                          <div style={styles.serviceTitle}>{heading}</div>
+                          <div style={styles.serviceDesc}>{firstPkg.desc || 'Explore ' + heading}</div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -1095,86 +1086,89 @@ const BatteryServiceSelection = () => {
 
 
       <AnimatePresence>
-        {selectedPopupService && (
+        {selectedAddonCategory && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="bss-modal-overlay"
-            onClick={() => { setSelectedPopupService(null); setShowAllFeatures(false); }}
+            onClick={() => { setSelectedAddonCategory(null); setShowAllFeatures(false); }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bss-modal-content"
+              style={{ maxHeight: '90vh', overflowY: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
-                onClick={() => { setSelectedPopupService(null); setShowAllFeatures(false); }}
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#666', zIndex: 10 }}
+                onClick={() => { setSelectedAddonCategory(null); setShowAllFeatures(false); }}
               >
                 <X size={24} />
               </button>
 
-              <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px', marginTop: 0 }}>Scheduled Packages</h2>
+              <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px', marginTop: 0 }}>
+                {selectedAddonCategory}
+              </h2>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="bss-pkg-box">
-                  {selectedPopupService.image_url && (
-                    <div className="bss-pkg-img">
-                      <img src={selectedPopupService.image_url} alt={selectedPopupService.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  )}
-                  <div className="bss-pkg-content">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{selectedPopupService.title}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
-                        <Clock size={12} />
-                        <span>{selectedPopupService.time_taken || '2 Hrs Taken'}</span>
+                {packages.filter(p => (p.category_heading || 'Regular Services') === selectedAddonCategory).map((pkg, idx) => (
+                  <div key={idx} className="bss-pkg-box">
+                    {pkg.image_url && (
+                      <div className="bss-pkg-img">
+                        <img src={pkg.image_url} alt={pkg.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                    </div>
-
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      <span>• {selectedPopupService.time_taken || '2 Hrs Taken'}</span>
-                    </div>
-
-                    <div className="bss-pkg-features">
-                      {(selectedPopupService.includes || [selectedPopupService.desc]).slice(0, 5).map((feature, idx) => (
-                        <div key={idx} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
-                      ))}
-                      {showAllFeatures && (selectedPopupService.includes || []).slice(5).map((feature, idx) => (
-                        <div key={idx + 5} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
-                      ))}
-                      {!showAllFeatures && (selectedPopupService.includes || []).length > 5 && (
-                        <div
-                          style={{ color: '#22c55e', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center' }}
-                          onClick={() => setShowAllFeatures(true)}
-                        >
-                          + {(selectedPopupService.includes || []).length - 5} more View All
+                    )}
+                    <div className="bss-pkg-content flex-1">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#222', margin: 0 }}>{pkg.title}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e5e7eb', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#4b5563' }}>
+                          <Clock size={12} />
+                          <span>{pkg.time_taken || '4 Hrs Taken'}</span>
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    <div className="bss-cart-row">
-                      <div className="bss-cart-price-col">
-                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. {Math.round(selectedPopupService.price * 1.3)}</span>
-                        <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ {selectedPopupService.price}</span>
+                      <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        <span>• {pkg.time_taken || '4 Hrs Taken'}</span>
+                      </div>
+
+                      <div className="bss-pkg-features">
+                        {(pkg.includes || [pkg.desc]).slice(0, 5).map((feature, fIdx) => (
+                          <div key={fIdx} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
+                        ))}
+                        {showAllFeatures && (pkg.includes || []).slice(5).map((feature, fIdx) => (
+                          <div key={fIdx + 5} className="bss-pkg-feature-item"><Check size={14} color="#22c55e" /> {feature}</div>
+                        ))}
+                        {!showAllFeatures && (pkg.includes || []).length > 5 && (
+                          <div
+                            style={{ color: '#22c55e', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center' }}
+                            onClick={() => setShowAllFeatures(true)}
+                          >
+                            + {(pkg.includes || []).length - 5} more View All
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bss-cart-row">
+                        <div className="bss-cart-price-col">
+                          <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>Rs. {pkg.oldPrice || Math.round(pkg.price * 1.3)}</span>
+                          <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>₹ {pkg.price}</span>
+                        </div>
                         <button
                           className="bss-cart-btn"
-                          style={selectedAddons.some(a => a.id === selectedPopupService.id) ? { color: '#ef4444', borderColor: '#ef4444' } : { color: '#3b82f6', borderColor: '#3b82f6' }}
+                          style={selectedAddons.some(a => a.id === pkg.id) ? { color: '#ef4444', borderColor: '#ef4444' } : { color: '#3b82f6', borderColor: '#3b82f6' }}
                           onClick={() => {
-                            handleAddonToggle(selectedPopupService);
-                            setSelectedPopupService(null);
-                            setShowAllFeatures(false);
+                            handleAddonToggle(pkg);
                           }}
                         >
-                          {selectedAddons.some(a => a.id === selectedPopupService.id) ? '- REMOVE FROM CART' : '+ ADD TO CART'}
+                          {selectedAddons.some(a => a.id === pkg.id) ? '- REMOVE FROM CART' : '+ ADD TO CART'}
                         </button>
                       </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
 
             </motion.div>
