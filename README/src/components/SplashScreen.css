@@ -20,18 +20,18 @@
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  width: 280px;
-  height: 280px;
+  width: 320px;
+  height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 170, 210, 0.15) 0%, transparent 70%);
-  border: 1px solid rgba(0, 170, 210, 0.2);
-  box-shadow: 0 0 30px rgba(0, 170, 210, 0.1);
-  animation: pulseGlow 4s ease-in-out infinite alternate;
+  border: 3px solid rgba(0, 170, 210, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 40px rgba(0, 170, 210, 0.4), inset 0 0 40px rgba(0, 170, 210, 0.4);
+  animation: pulseRing 3s ease-in-out infinite alternate;
 }
 
-@keyframes pulseGlow {
-  0% { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 170, 210, 0.1); }
-  100% { transform: scale(1.05); box-shadow: 0 0 40px rgba(0, 170, 210, 0.3); }
+@keyframes pulseRing {
+  0% { transform: scale(0.95); border-color: rgba(0, 170, 210, 0.4); box-shadow: 0 0 20px rgba(0, 170, 210, 0.2), inset 0 0 20px rgba(0, 170, 210, 0.2); }
+  100% { transform: scale(1.02); border-color: rgba(0, 170, 210, 1); box-shadow: 0 0 60px rgba(0, 170, 210, 0.7), inset 0 0 60px rgba(0, 170, 210, 0.7); }
 }
 
 
