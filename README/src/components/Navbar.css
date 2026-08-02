@@ -1,0 +1,431 @@
+/* Two-Tier Corporate Navbar Styling */
+
+/* --- Top Utility Bar --- */
+.top-utility-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  background: #0f172a;
+  /* Deep Slate / Navy */
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.top-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 2rem;
+}
+
+.top-bar-left,
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-bar-text,
+.top-bar-link {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.top-bar-link:hover {
+  color: #00AAD2;
+}
+
+.top-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.8rem;
+}
+
+/* --- Main Navbar --- */
+.floating-navbar {
+  position: fixed;
+  top: 36px;
+  /* Below top bar */
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  font-family: 'Playfair Display', 'Times New Roman', Georgia, serif !important;
+
+  /* Match footer background */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 70px;
+}
+
+/* Brand styling */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.brand-icon {
+  filter: drop-shadow(0 2px 5px rgba(0, 170, 210, 0.15));
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-link {
+  color: #334155;
+  /* Slate 700 */
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+  transition: all 0.3s ease;
+  position: relative;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  text-transform: uppercase;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #00AAD2;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #00AAD2;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* Actions */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.contact-chip-link {
+  text-decoration: none;
+}
+
+.contact-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f172a;
+  /* Slate 900 */
+  color: #ffffff;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.contact-chip .lucide {
+  color: #00AAD2;
+}
+
+.contact-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 170, 210, 0.3);
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #00AAD2;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #0f172a;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background: #f8fafc;
+  border-color: #00AAD2;
+  color: #00AAD2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Dropdown */
+.dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.dropdown-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 3px solid #00AAD2;
+  border-radius: 0 0 12px 12px;
+  padding: 1rem;
+  min-width: 380px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.05);
+  transform: translateX(4px);
+}
+
+.dropdown-icon {
+  color: #ffffff;
+  margin-top: 0.1rem;
+  background: #00AAD2;
+  padding: 0.6rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover .dropdown-icon {
+  background: #0f172a;
+  transform: scale(1.05);
+}
+
+.dropdown-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-title {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown-item:hover .dropdown-title {
+  color: #00AAD2;
+}
+
+.dropdown-desc {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .floating-navbar {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+    margin-left: auto;
+  }
+  
+  .nav-links {
+    display: none !important;
+  }
+
+  .nav-links.mobile-open {
+    display: flex !important;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100vw;
+    background: #ffffff !important;
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    z-index: 9999;
+  }
+  
+  .nav-links .nav-link {
+    width: 100%;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    height: auto;
+    font-size: 1.1rem;
+    color: #0f172a;
+  }
+  
+  /* Remove the ::after underline on mobile to fix the strikethrough bug */
+  .nav-links .nav-link::after {
+    display: none !important;
+  }
+  
+  .nav-links .nav-link.active {
+    color: #00AAD2;
+    background: none;
+  }
+  
+  .nav-actions {
+    display: none;
+  }
+  
+  .nav-links.mobile-open .nav-actions-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .top-utility-bar {
+    display: none !important;
+  }
+  
+  .floating-navbar {
+    top: 0 !important;
+    background: #ffffff !important;
+  }
+  
+  .nav-links.mobile-open {
+    height: auto !important; /* Override height: 100% so background covers all items */
+    min-height: max-content;
+    gap: 0 !important; /* Remove the huge desktop gap */
+  }
+  
+  .nav-links .nav-link {
+    margin: 0 !important;
+    padding: 1rem 1.5rem !important;
+  }
+  
+  /* Fix the empty dropdown container taking up space */
+  .nav-links .dropdown-container:empty {
+    display: none !important;
+  }
+}
+
+/* Base Mobile Menu Button Rule (Hidden on Desktop) */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-btn {
+    display: block !important;
+  }
+}
+
+.mobile-brand-text {
+  display: none;
+  font-weight: 900;
+  font-size: 1.4rem;
+  color: #0f172a;
+  letter-spacing: 2px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+@media (max-width: 900px) {
+  .mobile-brand-text {
+    display: block;
+  }
+}

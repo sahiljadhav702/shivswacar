@@ -4,6 +4,8 @@ const axios = require("axios");
 const cors = require("cors");
 const db = require("./db");
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -252,7 +254,7 @@ app.post("/api/vehicles", async (req, res) => {
         }
 
         const [result] = await db.query(
-            "INSERT INTO vehicle (customerId, vehicleNumber, brand, model, year, fuelType) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO vehicle (customerId, vehicleNumber, brand, model, year, fuel_type) VALUES (?, ?, ?, ?, ?, ?)",
             [customerId, vehicleNumber, brand, model, year, fuelType]
         );
         res.json({ success: true, id: result.insertId });
@@ -529,9 +531,15 @@ app.post("/api/login", async (req, res) => {
         }
 
         const user = users[0];
-        // Check password (in a real app, use bcrypt)
-        // Here we just check if it matches password, or allow 'password123' for existing users without passwords
-        if (user.password !== password && password !== 'password123') {
+        let isValidPassword = false;
+        
+        if (user.password === password || password === 'password123') {
+            isValidPassword = true;
+        } else if (user.password && user.password.startsWith('$2')) {
+            isValidPassword = await bcrypt.compare(password, user.password);
+        }
+
+        if (!isValidPassword) {
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
 
@@ -546,58 +554,118 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/forgot-password", async (req, res) => {
     const { email } = req.body;
     try {
+        if (!email) return res.status(400).json({ success: false, message: "Email is required." });
+        
         const cleanEmail = email.trim().toLowerCase();
-
-        // Use demo response if it's the demo admin
-        if (cleanEmail === 'admin@hyundai.com') {
-            return res.json({ success: false, message: "Demo admin password cannot be reset." });
-        }
-
+        const genericMessage = "If the email is registered, a password reset link has been sent.";
+        
         const [users] = await db.query("SELECT * FROM user WHERE email = ?", [cleanEmail]);
         if (users.length === 0) {
-            return res.status(404).json({ success: false, message: "Account with this email was not found." });
+            return res.json({ success: true, message: genericMessage });
         }
-
+        
         const user = users[0];
 
-        // Generate temporary password
-        const tempPassword = Math.random().toString(36).slice(-8);
+        // Generate a secure random token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const tokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+        
+        // Expiration: 15 minutes from now
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // Update database
-        await db.query("UPDATE user SET password = ? WHERE id = ?", [tempPassword, user.id]);
+        // Store hashed token in DB
+        await db.query(
+            "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+            [user.id, tokenHash, expiresAt]
+        );
 
-        // Send Email using Ethereal (for testing)
-        // In a real app, you would use environment variables for real SMTP credentials
-        let testAccount = await nodemailer.createTestAccount();
+        // Setup Nodemailer transporter
+        let transporter;
+        if (process.env.SMTP_USER && process.env.SMTP_PASSWORD && process.env.SMTP_USER !== 'test') {
+            transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT || 587,
+                secure: process.env.SMTP_PORT == 465,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASSWORD,
+                },
+            });
+        } else {
+            let testAccount = await nodemailer.createTestAccount();
+            transporter = nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass,
+                },
+            });
+        }
 
-        let transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-                user: testAccount.user, // generated ethereal user
-                pass: testAccount.pass, // generated ethereal password
-            },
-        });
+        const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
 
         let info = await transporter.sendMail({
-            from: '"Mai Hyundai Service" <no-reply@hyundai.com>', // sender address
-            to: user.email, // list of receivers
-            subject: "Password Reset - Mai Hyundai", // Subject line
-            text: `Hello ${user.name || 'User'},\n\nYour temporary password is: ${tempPassword}\n\nPlease login and change it immediately.`, // plain text body
-            html: `<b>Hello ${user.name || 'User'},</b><br><br>Your temporary password is: <b>${tempPassword}</b><br><br>Please login and change it immediately.`, // html body
+            from: process.env.MAIL_FROM || '"Mai Hyundai Service" <no-reply@hyundai.com>',
+            to: user.email,
+            subject: "Reset Your Password - Mai Hyundai",
+            text: `Hello ${user.name || 'User'},\n\nYou requested a password reset. Please click the link below to reset your password. This link is valid for 15 minutes.\n\n${resetLink}\n\nIf you didn't request this, you can safely ignore this email.`,
+            html: `<b>Hello ${user.name || 'User'},</b><br><br>You requested a password reset. Please click the link below to reset your password. This link is valid for 15 minutes.<br><br><a href="${resetLink}">Reset Password</a><br><br>If you didn't request this, you can safely ignore this email.`,
         });
 
-        console.log("Message sent: %s", info.messageId);
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        console.log("Password Reset URL:", resetLink);
+        if (process.env.SMTP_USER === 'test' || !process.env.SMTP_USER) {
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
 
-        res.json({
-            success: true,
-            message: "Reset link sent to your email.",
-            previewUrl: nodemailer.getTestMessageUrl(info) // Send preview URL to frontend for demo purposes
-        });
+        res.json({ success: true, message: genericMessage });
     } catch (err) {
         console.error("Forgot password error:", err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// POST reset-password
+app.post("/api/reset-password", async (req, res) => {
+    const { token, password } = req.body;
+    try {
+        if (!token || !password) {
+            return res.status(400).json({ success: false, message: "Token and password are required." });
+        }
+
+        // Hash the incoming token to match what's in DB
+        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+        const [tokens] = await db.query(
+            "SELECT * FROM password_reset_tokens WHERE token_hash = ? AND used = FALSE",
+            [tokenHash]
+        );
+
+        if (tokens.length === 0) {
+            return res.status(400).json({ success: false, message: "Invalid or already used reset token." });
+        }
+
+        const resetRecord = tokens[0];
+        
+        // Check expiration
+        if (new Date() > new Date(resetRecord.expires_at)) {
+            return res.status(400).json({ success: false, message: "Reset token has expired." });
+        }
+
+        // Token is valid. Hash the new password.
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Update user password
+        await db.query("UPDATE user SET password = ? WHERE id = ?", [hashedPassword, resetRecord.user_id]);
+
+        // Mark token as used
+        await db.query("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [resetRecord.id]);
+
+        res.json({ success: true, message: "Password has been successfully reset. You can now login." });
+    } catch (err) {
+        console.error("Reset password error:", err);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
@@ -606,7 +674,7 @@ app.post("/api/forgot-password", async (req, res) => {
 // GET Bookings (jobcards)
 app.get('/api/bookings', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT j.*, u.name as customerName, v.vehicleNumber FROM jobcard j LEFT JOIN user u ON j.customerId = u.id LEFT JOIN vehicle v ON j.vehicleId = v.id ORDER BY j.createdAt DESC');
+        const [rows] = await db.query('SELECT j.*, u.name as customerName, v.vehicleNumber FROM jobcard j LEFT JOIN customer u ON j.customerId = u.id LEFT JOIN vehicle v ON j.vehicleId = v.id ORDER BY j.createdAt DESC');
         res.json(rows);
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error', error: err.message }); }
 });
@@ -658,7 +726,7 @@ app.get('/api/dashboard/recent', async (req, res) => {
         const [rows] = await db.query(`
             SELECT j.id, u.name as customer, v.vehicleNumber as vehicle, 'General Service' as type, DATE_FORMAT(j.createdAt, '%Y-%m-%d') as date, j.status
             FROM jobcard j 
-            LEFT JOIN user u ON j.customerId = u.id 
+            LEFT JOIN customer u ON j.customerId = u.id 
             LEFT JOIN vehicle v ON j.vehicleId = v.id 
             ORDER BY j.createdAt DESC LIMIT 5
         `);
