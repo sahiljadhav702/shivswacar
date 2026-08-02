@@ -12,28 +12,29 @@
   overflow: hidden;
 }
 
-.splash-ambient-glow {
-  position: absolute;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(0, 170, 210, 0.25) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: pulseGlow 4s ease-in-out infinite alternate;
-}
-
-@keyframes pulseGlow {
-  0% { transform: scale(0.9); opacity: 0.4; }
-  100% { transform: scale(1.1); opacity: 0.8; }
-}
-
 .splash-content {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 170, 210, 0.15) 0%, transparent 70%);
+  border: 1px solid rgba(0, 170, 210, 0.2);
+  box-shadow: 0 0 30px rgba(0, 170, 210, 0.1);
+  animation: pulseGlow 4s ease-in-out infinite alternate;
 }
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 170, 210, 0.1); }
+  100% { transform: scale(1.05); box-shadow: 0 0 40px rgba(0, 170, 210, 0.3); }
+}
+
+
 
 /* Breathing Logo */
 .splash-icon-box {

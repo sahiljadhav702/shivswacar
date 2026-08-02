@@ -40,9 +40,6 @@ const SplashScreen = ({ onComplete }) => {
         transition: { duration: 0.6, ease: 'easeInOut' } 
       }}
     >
-      {/* Background ambient glow */}
-      <div className="splash-ambient-glow"></div>
-
       <div className="splash-content">
         <motion.div
           className="splash-logo-wrapper"
