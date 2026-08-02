@@ -151,8 +151,8 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
             {pkgsLoading ? <div className="p-8 text-center col-span-full">Loading Packages...</div> : packages.length === 0 ? <div className="p-8 text-center col-span-full">No packages found.</div> : packages.map(pkg => (
               <div key={pkg.id} className={`relative p-6 rounded-2xl border ${pkg.popular ? 'border-primary shadow-primary/20' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-800 shadow-sm flex flex-col`}>
-                {pkg.badge && <span className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10 transform rotate-12">{pkg.badge}</span>}
-                {pkg.popular && <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-primary-dark text-white text-xs font-bold px-4 py-1 rounded-full shadow-md whitespace-nowrap">MOST POPULAR</div>}
+                {pkg.badge ? <span className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10 transform rotate-12">{pkg.badge}</span> : null}
+                {pkg.popular ? <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-primary-dark text-white text-xs font-bold px-4 py-1 rounded-full shadow-md whitespace-nowrap">MOST POPULAR</div> : null}
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-4">{pkg.title}</h3>
                   <div className="flex gap-2 shrink-0">
@@ -223,9 +223,8 @@ const Services = () => {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div><label className="block text-sm font-medium mb-1">Time Taken</label><input type="text" placeholder="e.g. 4 Hrs Taken" value={pkgFormData.time_taken} onChange={e => setPkgFormData({...pkgFormData, time_taken: e.target.value})} className="input-field py-2 w-full" /></div>
-              <div><label className="block text-sm font-medium mb-1">Image URL</label><input type="text" placeholder="https://..." value={pkgFormData.image_url} onChange={e => setPkgFormData({...pkgFormData, image_url: e.target.value})} className="input-field py-2 w-full" /></div>
             </div>
             <div>
               <label className="flex items-center space-x-2 text-sm font-medium cursor-pointer mt-2">

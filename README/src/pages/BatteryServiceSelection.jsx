@@ -195,8 +195,7 @@ const BatteryServiceSelection = () => {
 
   const getSubtotal = () => {
     const partsTotal = selectedInterval ? currentParts.reduce((sum, item) => sum + item.basePrice, 0) : 0;
-    const addonsTotal = selectedAddons.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-    return partsTotal + addonsTotal;
+    return partsTotal;
   };
 
   const subtotal = getSubtotal();
@@ -777,21 +776,13 @@ const BatteryServiceSelection = () => {
             style={styles.tabsContainer}
           >
             <button
-              style={{ ...styles.tabButton, ...(activeTab === 'interval' ? styles.activeTab : styles.inactiveTab) }}
-              onClick={() => setActiveTab('interval')}
+              style={{ ...styles.tabButton, ...styles.activeTab }}
             >
               Select Service Interval
             </button>
-            <button
-              style={{ ...styles.tabButton, ...(activeTab === 'addons' ? styles.activeTab : styles.inactiveTab) }}
-              onClick={() => setActiveTab('addons')}
-            >
-              Add-on Services
-            </button>
           </motion.div>
 
-          {activeTab === 'interval' && (
-            <>
+          <>
               <motion.div
                 initial="hidden"
                 animate="visible"
@@ -926,52 +917,6 @@ const BatteryServiceSelection = () => {
                 )}
               </AnimatePresence>
             </>
-          )}
-
-          {activeTab === 'addons' && (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-              style={styles.addonsSection}
-            >
-
-
-              <motion.div
-                style={styles.servicesGrid}
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="bss-services-grid"
-              >
-                {individualServices.map((service, idx) => {
-                  const isSelected = selectedAddons.some(a => a.id === service.id);
-                  return (
-                    <motion.div
-                      key={service.id}
-                      style={{ ...styles.serviceCard, ...(isSelected ? styles.serviceSelected : {}) }}
-                      variants={fadeInUp}
-                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                      onClick={() => setSelectedPopupService(service)}
-                      className="bss-service-card"
-                    >
-                      <div style={styles.serviceIconWrapper}>
-                        <div style={styles.serviceIcon}>{service.icon}</div>
-                        {isSelected && <CircleCheck size={18} style={styles.serviceCheck} />}
-                      </div>
-                      <div style={styles.serviceInfo}>
-                        <div style={styles.serviceTitle}>{service.title}</div>
-                        <div style={styles.serviceDesc}>{service.desc}</div>
-                      </div>
-
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </motion.div>
-          )}
         </div>
 
         <div style={styles.rightPane} className="bss-right-pane">
@@ -1018,15 +963,6 @@ const BatteryServiceSelection = () => {
                   </>
                 )}
 
-                {selectedAddons.length > 0 && selectedAddons.map((addon, idx) => (
-                  <div key={`addon-${idx}`} style={{ ...styles.summaryRow, ...styles.summarySub }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#3b82f6' }}>➕</span>
-                      <span>{addon.title}</span>
-                    </div>
-                    <span>{formatPrice(addon.price)}</span>
-                  </div>
-                ))}
               </div>
 
               <div style={styles.summaryDivider}></div>
@@ -1059,9 +995,6 @@ const BatteryServiceSelection = () => {
                     const partNames = currentParts.filter(p => p.price > 0).length > 0
                       ? 'Includes: ' + currentParts.filter(p => p.price > 0).map(p => p.name).join(', ')
                       : 'Basic Inspection';
-                    const addonNames = selectedAddons.length > 0
-                      ? ' | Addons: ' + selectedAddons.map(a => a.title).join(', ')
-                      : '';
                     navigate('/garage-selection', {
                       state: {
                         vehicle: {
@@ -1071,7 +1004,7 @@ const BatteryServiceSelection = () => {
                           mobileNumber: location.state?.mobileNumber
                         },
                         package: {
-                          name: `Service Interval: ${selectedInterval} (${partNames}${addonNames})`,
+                          name: `Service Interval: ${selectedInterval} (${partNames})`,
                           price: grandTotal
                         }
                       }
