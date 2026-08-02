@@ -327,46 +327,12 @@
 
 /* Premium Desktop Styling */
 @media (min-width: 768px) {
-  .dt-time-carousel-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
-  .dt-time-carousel-wrapper .dt-time-nav {
-    display: flex;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-  }
-  
-  .dt-time-carousel-wrapper .dt-time-nav.left {
-    left: -15px;
-  }
-  
-  .dt-time-carousel-wrapper .dt-time-nav.right {
-    right: -15px;
-  }
-  
   .dt-time-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
-    padding: 0.5rem;
-    scrollbar-width: none; /* Firefox */
-    margin-bottom: 0;
-  }
-  
-  .dt-time-grid::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
   }
   
   .dt-time-card {
-    flex: 0 0 calc(25% - 1.125rem); /* Exactly 4 columns with gap */
-    scroll-snap-align: start;
     padding: 1.2rem 1.5rem;
     border-radius: 12px;
     background: linear-gradient(145deg, #ffffff, #f8fafc);
