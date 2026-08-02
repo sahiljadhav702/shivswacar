@@ -128,18 +128,7 @@ const BatteryServiceSelection = () => {
     { icon: <Check size={20} />, text: 'Trusted by Thousands' }
   ];
 
-  const individualServices = [
-    { id: 's1', title: 'Car Services', price: 1499, icon: <Wrench size={22} />, desc: 'General car service & maintenance' },
-    { id: 's2', title: 'AC Service & Repair', price: 999, icon: <Wind size={22} />, desc: 'AC cooling & repair' },
-    { id: 's3', title: 'Batteries', price: 2499, icon: <Battery size={22} />, desc: 'Replacement and health check' },
-    { id: 's4', title: 'Tyres & Wheel Care', price: 499, icon: <Circle size={22} />, desc: 'Alignment, balancing & more' },
-    { id: 's5', title: 'Denting & Painting', price: 1999, icon: <Paintbrush size={22} />, desc: 'Bodywork and color restoration' },
-    { id: 's6', title: 'Detailing Services', price: 1299, icon: <Sparkles size={22} />, desc: 'Exterior & interior detailing' },
-    { id: 's7', title: 'Car Spa & Cleaning', price: 599, icon: <Droplets size={22} />, desc: 'Deep cleaning and washing' },
-    { id: 's8', title: 'Car Inspections', price: 499, icon: <Search size={22} />, desc: 'Comprehensive vehicle inspection' },
-    { id: 's9', title: 'Windshields & Lights', price: 899, icon: <Sun size={22} />, desc: 'Glass repair & lighting check' },
-    { id: 's10', title: 'Suspension & Fitments', price: 1599, icon: <Settings size={22} />, desc: 'Shock absorbers & fitments' },
-  ];
+
 
   const handleAddonToggle = (service) => {
     if (selectedAddons.find(a => a.id === service.id)) {
@@ -946,7 +935,7 @@ const BatteryServiceSelection = () => {
                 viewport={{ once: true }}
                 className="bss-services-grid"
               >
-                {individualServices.map((service, idx) => {
+                {packages.map((service, idx) => {
                   const isSelected = selectedAddons.some(a => a.id === service.id);
                   return (
                     <motion.div

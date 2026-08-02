@@ -101,7 +101,17 @@ const Services = () => {
 
   return (
     <div className="space-y-6">
-      <div className="glass-panel rounded-2xl overflow-hidden animate-fade-in">
+      <div className="flex space-x-2 border-b border-slate-200 dark:border-slate-700 pb-2">
+        <button onClick={() => setActiveTab('parts')} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-all ${activeTab === 'parts' ? 'bg-primary text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
+          <Wrench size={18} /> Service Parts
+        </button>
+        <button onClick={() => setActiveTab('packages')} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-all ${activeTab === 'packages' ? 'bg-primary text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
+          <Package size={18} /> Add-on Services
+        </button>
+      </div>
+
+      {activeTab === 'parts' && (
+        <div className="glass-panel rounded-2xl overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Service Parts</h2>
             <button onClick={() => { setEditingPartId(null); setPartFormData({ name: '', price: '', intervals: [] }); setIsPartModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
@@ -128,6 +138,51 @@ const Services = () => {
             )}
           </div>
         </div>
+      )}
+
+      {activeTab === 'packages' && (
+        <div className="glass-panel rounded-2xl overflow-hidden animate-fade-in">
+          <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add-on Services</h2>
+            <button onClick={() => { setEditingPkgId(null); setPkgFormData({ title: '', description: '', price: '', oldPrice: '', badge: '', icon_type: 'Wrench', includes: [''], popular: false, time_taken: '4 Hrs Taken', image_url: 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg' }); setIsPkgModalOpen(true); }} className="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-2">
+              <Plus size={16} /> Add Add-on Service
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            {pkgsLoading ? <div className="p-8 text-center col-span-full">Loading Packages...</div> : packages.length === 0 ? <div className="p-8 text-center col-span-full">No packages found.</div> : packages.map(pkg => (
+              <div key={pkg.id} className={`relative p-6 rounded-2xl border ${pkg.popular ? 'border-primary shadow-primary/20' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-800 shadow-sm flex flex-col`}>
+                {pkg.badge ? <span className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10 transform rotate-12">{pkg.badge}</span> : null}
+                {pkg.popular ? <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-primary-dark text-white text-xs font-bold px-4 py-1 rounded-full shadow-md whitespace-nowrap">MOST POPULAR</div> : null}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-4">{pkg.title}</h3>
+                  <div className="flex gap-2 shrink-0">
+                    <button onClick={() => openEditPkg(pkg)} className="text-primary hover:text-primary-dark font-semibold text-sm">Edit</button>
+                    <button onClick={() => window.confirm('Delete?') && deletePkgMutation.mutate(pkg.id)} className="text-red-500 hover:text-red-700 font-semibold text-sm">Delete</button>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{pkg.description}</p>
+                <div className="flex items-end gap-2 mb-4">
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">₹{pkg.price}</span>
+                  {pkg.oldPrice && <span className="text-sm text-slate-400 line-through mb-1">₹{pkg.oldPrice}</span>}
+                </div>
+                <ul className="space-y-2 mt-auto text-sm text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-700 pt-4">
+                  {(() => {
+                    let incs = [];
+                    try { incs = typeof pkg.includes === 'string' ? JSON.parse(pkg.includes) : pkg.includes; } catch(e){}
+                    return (incs || []).slice(0, 3).map((inc, idx) => <li key={idx} className="flex gap-2"><span>•</span><span className="truncate">{inc}</span></li>);
+                  })()}
+                  {(() => {
+                    let incs = [];
+                    try { incs = typeof pkg.includes === 'string' ? JSON.parse(pkg.includes) : pkg.includes; } catch(e){}
+                    if (incs && incs.length > 3) return <li className="text-xs text-primary font-semibold">+ {incs.length - 3} more...</li>;
+                    return null;
+                  })()}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* PARTS MODAL */}
       <Modal isOpen={isPartModalOpen} onClose={() => setIsPartModalOpen(false)} title={editingPartId ? "Edit Part" : "Add New Part"}>
@@ -145,7 +200,55 @@ const Services = () => {
         </div>
       </Modal>
 
-
+      {/* PACKAGES MODAL */}
+      <Modal isOpen={isPkgModalOpen} onClose={() => setIsPkgModalOpen(false)} title={editingPkgId ? "Edit Add-on Service" : "Add New Add-on Service"}>
+        <div className="max-h-[70vh] overflow-y-auto px-1 pb-4">
+          <form onSubmit={handlePkgSubmit} className="space-y-4">
+            <div><label className="block text-sm font-medium mb-1">Add-on Title</label><input required type="text" value={pkgFormData.title} onChange={e => setPkgFormData({...pkgFormData, title: e.target.value})} className="input-field py-2 w-full" /></div>
+            <div><label className="block text-sm font-medium mb-1">Description</label><textarea required value={pkgFormData.description} onChange={e => setPkgFormData({...pkgFormData, description: e.target.value})} className="input-field py-2 w-full" rows="2" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Current Price (₹)</label><input required type="number" value={pkgFormData.price} onChange={e => setPkgFormData({...pkgFormData, price: e.target.value})} className="input-field py-2 w-full" /></div>
+              <div><label className="block text-sm font-medium mb-1">Old Price (₹) (Optional)</label><input type="number" value={pkgFormData.oldPrice} onChange={e => setPkgFormData({...pkgFormData, oldPrice: e.target.value})} className="input-field py-2 w-full" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Badge Text (Optional)</label><input type="text" placeholder="e.g. 20% OFF" value={pkgFormData.badge} onChange={e => setPkgFormData({...pkgFormData, badge: e.target.value})} className="input-field py-2 w-full" /></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Icon</label>
+                <select value={pkgFormData.icon_type} onChange={e => setPkgFormData({...pkgFormData, icon_type: e.target.value})} className="input-field py-2 w-full">
+                  <option value="Battery">Battery</option>
+                  <option value="Shield">Shield</option>
+                  <option value="Zap">Zap / Electrical</option>
+                  <option value="Wrench">Wrench / Service</option>
+                  <option value="Star">Star</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Time Taken</label><input type="text" placeholder="e.g. 4 Hrs Taken" value={pkgFormData.time_taken} onChange={e => setPkgFormData({...pkgFormData, time_taken: e.target.value})} className="input-field py-2 w-full" /></div>
+            </div>
+            <div>
+              <label className="flex items-center space-x-2 text-sm font-medium cursor-pointer mt-2">
+                <input type="checkbox" checked={pkgFormData.popular} onChange={e => setPkgFormData({...pkgFormData, popular: e.target.checked})} className="rounded text-primary" />
+                <span>Mark as "Most Popular"</span>
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 border-t pt-4">Included Features</label>
+              <div className="space-y-2">
+                {pkgFormData.includes.map((inc, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input type="text" required value={inc} onChange={e => updatePkgInclude(i, e.target.value)} placeholder={`Feature ${i+1}`} className="input-field py-1 text-sm flex-1 w-full" />
+                    {pkgFormData.includes.length > 1 && <button type="button" onClick={() => removePkgInclude(i)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X size={18}/></button>}
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={addPkgInclude} className="mt-2 text-sm text-primary font-semibold flex items-center gap-1"><Plus size={14}/> Add Feature</button>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-6 mt-4 border-t"><button type="button" onClick={() => setIsPkgModalOpen(false)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button><button type="submit" disabled={pkgMutation.isPending} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg">{pkgMutation.isPending ? 'Saving...' : 'Save Package'}</button></div>
+          </form>
+        </div>
+      </Modal>
 
     </div>
   );
