@@ -101,20 +101,6 @@
   width: 250px;
 }
 
-.splash-progress-bar-container {
-  width: 100%;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.splash-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0, 170, 210, 0.8);
-}
 
 .splash-loading-text {
   font-size: 0.85rem;

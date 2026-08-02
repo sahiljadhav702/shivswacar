@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import hyundaiLogo from '../assets/hyundai-logo.png';
 import './SplashScreen.css';
@@ -66,15 +66,16 @@ const SplashScreen = ({ onComplete }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <div className="splash-progress-bar-container">
-            <motion.div 
-              className="splash-progress-bar"
-              style={{ width: `${progress}%` }}
-              layout
-            />
-          </div>
-          <div className="splash-loading-text">
-            Initializing Engine... {progress}%
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            >
+              <Loader2 size={28} color="#00aad2" />
+            </motion.div>
+            <div className="splash-loading-text" style={{ fontSize: '1rem', textTransform: 'none', letterSpacing: '0.5px' }}>
+              Initializing Engine... {progress}%
+            </div>
           </div>
         </motion.div>
       </div>
