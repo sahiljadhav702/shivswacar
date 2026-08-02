@@ -95,7 +95,7 @@ const BatteryServiceSelection = () => {
             includes: parsedIncludes,
             popular: pkg.popular === 1 || pkg.popular === true,
             time_taken: pkg.time_taken || '4 Hrs Taken',
-            image_url: pkg.image_url || 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg'
+            image_url: (pkg.image_url && pkg.image_url !== 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg') ? pkg.image_url : null
           };
         });
 

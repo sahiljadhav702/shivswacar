@@ -76,7 +76,7 @@ const Services = () => {
     setEditingPkgId(pkg.id);
     setPkgFormData({
       title: pkg.title || '', description: pkg.description || '', price: pkg.price || '',
-      icon_type: pkg.icon_type || 'Wrench', image_url: pkg.image_url || ''
+      icon_type: pkg.icon_type || 'Wrench', image_url: (pkg.image_url && pkg.image_url !== 'https://gomechanic.in/assets/img/customerpage/category/car-service.jpg') ? pkg.image_url : ''
     });
     setIsPkgModalOpen(true);
   };
