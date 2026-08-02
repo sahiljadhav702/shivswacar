@@ -47,6 +47,7 @@ const DateTimeSelection = () => {
   const [submitError, setSubmitError] = useState('');
   const [bookedSlots, setBookedSlots] = useState([]);
   const carouselRef = useRef(null);
+  const timeCarouselRef = useRef(null);
   const bottomRef = useRef(null);
 
   const handleTimeSelect = (time) => {
@@ -102,6 +103,16 @@ const DateTimeSelection = () => {
     if (carouselRef.current) {
       const scrollAmount = 200;
       carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleTimeScroll = (direction) => {
+    if (timeCarouselRef.current) {
+      const scrollAmount = 250;
+      timeCarouselRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
@@ -279,50 +290,59 @@ const DateTimeSelection = () => {
             <p>Available Slots</p>
           </div>
 
-          <motion.div 
-            className="dt-time-grid"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: { transition: { staggerChildren: 0.04 } },
-              hidden: {}
-            }}
-          >
-            {timeSlots.map((time) => {
-              const isSelected = selectedTime === time;
-              const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
-              const startTimeStr = time.split(' - ')[0];
-              const timeMapping = {
-                '09:00 AM': '09:00:00', '10:00 AM': '10:00:00', '11:00 AM': '11:00:00', '12:00 PM': '12:00:00',
-                '01:00 PM': '13:00:00', '02:00 PM': '14:00:00', '03:00 PM': '15:00:00', '04:00 PM': '16:00:00',
-                '05:00 PM': '17:00:00'
-              };
-              const timeVal = timeMapping[startTimeStr] || '10:00:00';
-              const booked = getBookedCount(dateStr, timeVal);
-              const slots = Math.max(0, 3 - booked);
-              const isSoldOut = slots === 0;
+          <div className="dt-carousel-wrapper dt-time-carousel-wrapper">
+            <button className="dt-carousel-nav left dt-time-nav" onClick={() => handleTimeScroll('left')}>
+              <ChevronLeft size={16} />
+            </button>
+            <motion.div 
+              className="dt-time-grid dt-time-carousel"
+              ref={timeCarouselRef}
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.04 } },
+                hidden: {}
+              }}
+            >
+              {timeSlots.map((time) => {
+                const isSelected = selectedTime === time;
+                const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+                const startTimeStr = time.split(' - ')[0];
+                const timeMapping = {
+                  '09:00 AM': '09:00:00', '10:00 AM': '10:00:00', '11:00 AM': '11:00:00', '12:00 PM': '12:00:00',
+                  '01:00 PM': '13:00:00', '02:00 PM': '14:00:00', '03:00 PM': '15:00:00', '04:00 PM': '16:00:00',
+                  '05:00 PM': '17:00:00'
+                };
+                const timeVal = timeMapping[startTimeStr] || '10:00:00';
+                const booked = getBookedCount(dateStr, timeVal);
+                const slots = Math.max(0, 3 - booked);
+                const isSoldOut = slots === 0;
 
-              return (
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 0, y: 15, scale: 0.95 },
-                    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 350, damping: 25 } }
-                  }}
-                  whileHover={{ scale: isSoldOut ? 1 : 1.03, y: isSoldOut ? 0 : -3 }}
-                  whileTap={{ scale: isSoldOut ? 1 : 0.98 }}
-                  key={time}
-                  className={`dt-time-card ${isSelected ? 'active' : ''} ${isSoldOut ? 'sold-out' : ''}`}
-                  onClick={() => !isSoldOut && handleTimeSelect(time)}
-                  style={{ cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
-                >
-                  <span className="time">{time}</span>
-                  <span className="slots-left" style={{ color: isSoldOut ? 'red' : 'inherit' }}>
-                    {isSoldOut ? 'Sold Out' : <><span className="dot"></span> {slots} Slots Left</>}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                return (
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 15, scale: 0.95 },
+                      visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 350, damping: 25 } }
+                    }}
+                    whileHover={{ scale: isSoldOut ? 1 : 1.03, y: isSoldOut ? 0 : -3 }}
+                    whileTap={{ scale: isSoldOut ? 1 : 0.98 }}
+                    key={time}
+                    className={`dt-time-card ${isSelected ? 'active' : ''} ${isSoldOut ? 'sold-out' : ''}`}
+                    onClick={() => !isSoldOut && handleTimeSelect(time)}
+                    style={{ cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
+                  >
+                    <span className="time">{time}</span>
+                    <span className="slots-left" style={{ color: isSoldOut ? 'red' : 'inherit' }}>
+                      {isSoldOut ? 'Sold Out' : <><span className="dot"></span> {slots} Slots Left</>}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+            <button className="dt-carousel-nav right dt-time-nav" onClick={() => handleTimeScroll('right')}>
+              <ChevronRight size={16} />
+            </button>
+          </div>
           {submitError && <div className="dt-error-text">{submitError}</div>}
 
           {/* Pickup & Drop Toggle */}
