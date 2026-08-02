@@ -14,9 +14,9 @@
 
 .splash-ambient-glow {
   position: absolute;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(0, 170, 210, 0.15) 0%, transparent 60%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(0, 170, 210, 0.25) 0%, transparent 70%);
   border-radius: 50%;
   animation: pulseGlow 4s ease-in-out infinite alternate;
 }
