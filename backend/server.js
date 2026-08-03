@@ -733,7 +733,7 @@ app.post("/api/forgot-password", async (req, res) => {
             }
         } catch (emailErr) {
             console.error("Failed to send reset email (check SMTP credentials):", emailErr);
-            // Still return success to prevent 500 crash for the user, but the email won't arrive.
+            return res.status(500).json({ success: false, message: "Email Error: " + emailErr.message });
         }
 
         res.json({ success: true, message: genericMessage });
