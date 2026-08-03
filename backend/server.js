@@ -111,7 +111,10 @@ app.post("/api/customers", async (req, res) => {
 
         let result;
         if (createdAt) {
-            [result] = await db.query("INSERT INTO customer (name, email, mobile, createdAt) VALUES (?, ?, ?, ?)", [name, email, phone, createdAt]);
+            // Ensure createdAt is in MySQL YYYY-MM-DD HH:MM:SS format
+            const dateObj = new Date(createdAt);
+            const mysqlDate = dateObj.toISOString().slice(0, 19).replace('T', ' ');
+            [result] = await db.query("INSERT INTO customer (name, email, mobile, createdAt) VALUES (?, ?, ?, ?)", [name, email, phone, mysqlDate]);
         } else {
             [result] = await db.query("INSERT INTO customer (name, email, mobile) VALUES (?, ?, ?)", [name, email, phone]);
         }
@@ -595,6 +598,32 @@ app.get("/api/dashboard/categories", async (req, res) => {
         res.json(rows);
     } catch (err) {
         console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// POST register (signup)
+app.post("/api/register", async (req, res) => {
+    const { name, email, password } = req.body;
+    try {
+        // Check if user already exists
+        const [existing] = await db.query("SELECT id FROM user WHERE email = ?", [email]);
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, message: "Email already registered" });
+        }
+
+        // Hash the password securely
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert into database with default role 'Customer'
+        await db.query(
+            "INSERT INTO user (name, email, password, role) VALUES (?, ?, ?, 'Customer')",
+            [name, email, hashedPassword]
+        );
+
+        res.json({ success: true, message: "Account created successfully" });
+    } catch (err) {
+        console.error("Register error:", err);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
