@@ -692,48 +692,37 @@ app.post("/api/forgot-password", async (req, res) => {
         );
 
         try {
-            // Setup Nodemailer transporter
-            let transporter;
-            if (process.env.SMTP_USER && process.env.SMTP_PASSWORD && process.env.SMTP_USER !== 'test') {
-                transporter = nodemailer.createTransport({
-                    host: process.env.SMTP_HOST,
-                    port: process.env.SMTP_PORT || 587,
-                    secure: process.env.SMTP_PORT == 465,
-                    auth: {
-                        user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASSWORD,
-                    },
-                });
-            } else {
-                let testAccount = await nodemailer.createTestAccount();
-                transporter = nodemailer.createTransport({
-                    host: "smtp.ethereal.email",
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: testAccount.user,
-                        pass: testAccount.pass,
-                    },
-                });
-            }
-
             const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+            const resendApiKey = process.env.RESEND_API_KEY;
+            
+            if (!resendApiKey) {
+                console.error("Missing RESEND_API_KEY");
+                return res.status(500).json({ success: false, message: "Email API Key is missing on the server." });
+            }
+            
+            // For testing without a verified domain, Resend requires 'onboarding@resend.dev'
+            const fromEmail = process.env.MAIL_FROM || 'onboarding@resend.dev';
 
-            let info = await transporter.sendMail({
-                from: process.env.MAIL_FROM || '"Mai Hyundai Service" <no-reply@hyundai.com>',
+            // Send via Resend HTTP API (Bypasses Railway SMTP Block)
+            const axios = require('axios');
+            await axios.post('https://api.resend.com/emails', {
+                from: fromEmail,
                 to: user.email,
                 subject: "Reset Your Password - Mai Hyundai",
                 text: `Hello ${user.name || 'User'},\n\nYou requested a password reset. Please click the link below to reset your password. This link is valid for 15 minutes.\n\n${resetLink}\n\nIf you didn't request this, you can safely ignore this email.`,
-                html: `<b>Hello ${user.name || 'User'},</b><br><br>You requested a password reset. Please click the link below to reset your password. This link is valid for 15 minutes.<br><br><a href="${resetLink}">Reset Password</a><br><br>If you didn't request this, you can safely ignore this email.`,
+                html: `<b>Hello ${user.name || 'User'},</b><br><br>You requested a password reset. Please click the link below to reset your password. This link is valid for 15 minutes.<br><br><a href="${resetLink}">Reset Password</a><br><br>If you didn't request this, you can safely ignore this email.`
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${resendApiKey}`,
+                    'Content-Type': 'application/json'
+                }
             });
 
+            console.log("Password Reset sent via Resend API to:", user.email);
             console.log("Password Reset URL:", resetLink);
-            if (process.env.SMTP_USER === 'test' || !process.env.SMTP_USER) {
-                console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-            }
         } catch (emailErr) {
-            console.error("Failed to send reset email (check SMTP credentials):", emailErr);
-            return res.status(500).json({ success: false, message: "Email Error: " + emailErr.message });
+            console.error("Failed to send reset email via Resend:", emailErr.response?.data || emailErr.message);
+            return res.status(500).json({ success: false, message: "Email Error: " + (emailErr.response?.data?.message || emailErr.message) });
         }
 
         res.json({ success: true, message: genericMessage });
